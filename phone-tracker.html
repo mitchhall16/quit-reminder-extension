@@ -321,6 +321,10 @@
         🔔 Alarm Ringing? Tap Here!
       </button>
 
+      <button class="disconnect-btn" id="testGpsBtn" style="margin-bottom: 10px;">
+        📍 Test GPS Location
+      </button>
+
       <p class="status-text" style="max-width: 300px; line-height: 1.6;">
         When alarm rings, tap the button above or just reopen this page.
       </p>
@@ -730,6 +734,31 @@
       if (!document.hidden && isAlarmActive) {
         requestWakeLock();
       }
+    });
+
+    // Test GPS button
+    document.getElementById('testGpsBtn').addEventListener('click', () => {
+      document.getElementById('testGpsBtn').textContent = 'Getting location...';
+
+      if (!navigator.geolocation) {
+        alert('GPS not supported on this browser!');
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const lat = position.coords.latitude.toFixed(6);
+          const lng = position.coords.longitude.toFixed(6);
+          const acc = Math.round(position.coords.accuracy);
+          alert(`GPS Working!\n\nLat: ${lat}\nLng: ${lng}\nAccuracy: ${acc}m`);
+          document.getElementById('testGpsBtn').textContent = '📍 Test GPS Location';
+        },
+        (error) => {
+          alert(`GPS Error: ${error.message}\n\nMake sure Location Services is enabled and you allowed permission.`);
+          document.getElementById('testGpsBtn').textContent = '📍 Test GPS Location';
+        },
+        { enableHighAccuracy: true, timeout: 10000 }
+      );
     });
 
     // Check alarm button - manually request status

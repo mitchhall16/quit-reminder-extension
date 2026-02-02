@@ -375,6 +375,8 @@
     let mqttClient = null;
     let roomCode = '';
     let bedLocation = null;
+    let phoneFallbackLocation = null;
+    let startLocation = null; // Where phone was when alarm started
     let targetDistance = 10;
     let locationWatchId = null;
     let isAlarmActive = false;
@@ -491,6 +493,18 @@
         const debugMqtt = document.getElementById('debugMqttStatus');
         if (debugRoom) debugRoom.textContent = code;
         if (debugMqtt) debugMqtt.textContent = 'Connected';
+
+        // Get phone's current location as fallback bed location
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            (pos) => {
+              phoneFallbackLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+              console.log('Got phone fallback location:', phoneFallbackLocation);
+            },
+            (err) => console.log('Could not get fallback location:', err),
+            { enableHighAccuracy: true }
+          );
+        }
 
         // Subscribe to room topic
         const topic = `wakeupalarm/${code}`;
@@ -619,43 +633,60 @@
 
       if (!navigator.geolocation) {
         gpsStatus.textContent = 'GPS not available';
+        alert('GPS is not available on this device/browser!');
         return;
       }
 
       gpsStatus.textContent = 'Getting location...';
+      startLocation = null; // Reset start location
 
       locationWatchId = navigator.geolocation.watchPosition(
         (position) => {
           const currentLat = position.coords.latitude;
           const currentLng = position.coords.longitude;
 
-          if (bedLocation) {
-            const distance = calculateDistance(
-              bedLocation.lat, bedLocation.lng,
-              currentLat, currentLng
-            );
-            updateDistanceUI(distance);
+          // Use bedLocation from computer, or capture start position on first reading
+          let referenceLocation = bedLocation;
 
-            // Send position update to computer
-            sendMessage({
-              type: 'location_update',
-              distance: Math.round(distance),
-              lat: currentLat,
-              lng: currentLng
-            });
-
-            // Check if far enough
-            if (distance >= targetDistance) {
-              alarmDismissed();
+          if (!referenceLocation || !referenceLocation.lat) {
+            // No bed location from computer - use first phone position as start
+            if (!startLocation) {
+              startLocation = { lat: currentLat, lng: currentLng };
+              gpsStatus.textContent = 'Start position set! Now walk away...';
+              console.log('Set start location:', startLocation);
+              return; // Don't calculate distance yet, need to move first
             }
+            referenceLocation = startLocation;
           }
 
-          gpsStatus.textContent = `Accuracy: ${Math.round(position.coords.accuracy)}m`;
+          const distance = calculateDistance(
+            referenceLocation.lat, referenceLocation.lng,
+            currentLat, currentLng
+          );
+
+          console.log('Distance:', distance, 'Target:', targetDistance);
+          updateDistanceUI(distance);
+
+          // Send position update to computer
+          sendMessage({
+            type: 'location_update',
+            distance: Math.round(distance),
+            lat: currentLat,
+            lng: currentLng
+          });
+
+          // Check if far enough (must be at least 3 meters to avoid GPS jitter)
+          if (distance >= targetDistance && distance >= 3) {
+            alarmDismissed();
+          }
+
+          gpsStatus.textContent = `Tracking... (accuracy: ${Math.round(position.coords.accuracy)}m)`;
         },
         (error) => {
           gpsStatus.textContent = `GPS error: ${error.message}`;
+          alert('GPS Error: ' + error.message + '\n\nPlease enable location services.');
         },
-        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
       );
     }
 

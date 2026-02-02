@@ -249,10 +249,22 @@
     /* Success Screen */
     .success-screen {
       display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(180deg, #0a1a0a 0%, #1a2e1a 100%);
+      z-index: 9999;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      text-align: center;
     }
 
     .success-screen.show {
-      display: block;
+      display: flex;
     }
 
     .success-icon {
@@ -438,12 +450,22 @@
       showScreen('pairing');
     });
 
-    // Done button
-    document.getElementById('doneBtn').addEventListener('click', () => {
-      disconnect();
-      showScreen('pairing');
-      digits.forEach(d => d.value = '');
-      pairBtn.disabled = true;
+    // Done button - multiple ways to make sure it works
+    const doneBtn = document.getElementById('doneBtn');
+    doneBtn.onclick = function() {
+      console.log('Done clicked');
+      window.location.reload();
+    };
+    doneBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      console.log('Done clicked via addEventListener');
+      window.location.reload();
+    });
+    doneBtn.addEventListener('touchend', function(e) {
+      e.preventDefault();
+      console.log('Done touched');
+      window.location.reload();
     });
 
     function showScreen(screen) {

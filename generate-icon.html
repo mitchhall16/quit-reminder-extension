@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head><title>Generate Icon</title></head>
+<body>
+<canvas id="c" width="48" height="48"></canvas>
+<br><br>
+<p>Right-click the image below and "Save image as..." icon.png</p>
+<img id="img">
+<script>
+const c = document.getElementById('c');
+const ctx = c.getContext('2d');
+
+// Background
+ctx.fillStyle = '#1a1a2e';
+ctx.beginPath();
+ctx.arc(24, 24, 22, 0, Math.PI * 2);
+ctx.fill();
+
+// Circle border
+ctx.strokeStyle = '#4ade80';
+ctx.lineWidth = 3;
+ctx.beginPath();
+ctx.arc(24, 24, 19, 0, Math.PI * 2);
+ctx.stroke();
+
+// Checkmark
+ctx.strokeStyle = '#4ade80';
+ctx.lineWidth = 4;
+ctx.lineCap = 'round';
+ctx.lineJoin = 'round';
+ctx.beginPath();
+ctx.moveTo(14, 24);
+ctx.lineTo(21, 31);
+ctx.lineTo(34, 17);
+ctx.stroke();
+
+// Show as image
+document.getElementById('img').src = c.toDataURL('image/png');
+</script>
+</body>
+</html>

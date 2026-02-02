@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      width: 350px;
+      background: #1a1a2e;
+      color: white;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      padding: 20px;
+    }
+
+    h1 {
+      font-size: 1.2rem;
+      margin-bottom: 5px;
+      background: linear-gradient(135deg, #4ade80, #22d3ee);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+      font-size: 0.75rem;
+      color: #666;
+      margin-bottom: 20px;
+    }
+
+    .section {
+      margin-bottom: 20px;
+    }
+
+    .section-title {
+      font-size: 0.7rem;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+
+    .toggle-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(255,255,255,0.05);
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
+
+    .toggle-label {
+      font-size: 0.9rem;
+    }
+
+    .toggle {
+      width: 50px;
+      height: 26px;
+      background: #333;
+      border-radius: 13px;
+      position: relative;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .toggle.active {
+      background: #4ade80;
+    }
+
+    .toggle::after {
+      content: '';
+      position: absolute;
+      width: 22px;
+      height: 22px;
+      background: white;
+      border-radius: 50%;
+      top: 2px;
+      left: 2px;
+      transition: left 0.2s;
+    }
+
+    .toggle.active::after {
+      left: 26px;
+    }
+
+    textarea {
+      width: 100%;
+      padding: 12px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      color: white;
+      font-size: 0.9rem;
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    textarea:focus {
+      outline: none;
+      border-color: #4ade80;
+    }
+
+    .input-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(255,255,255,0.05);
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
+
+    .input-row label {
+      flex: 0 0 auto;
+      min-width: 80px;
+      font-size: 0.9rem;
+    }
+
+    .input-row input[type="number"] {
+      width: 70px;
+      padding: 8px;
+      background: rgba(0,0,0,0.3);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 6px;
+      color: white;
+      text-align: center;
+    }
+
+    .input-row input[type="time"] {
+      width: 145px;
+      padding: 8px 5px 8px 10px;
+      background: rgba(0,0,0,0.3);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 6px;
+      color: white;
+      text-align: left;
+      font-size: 0.95rem;
+    }
+
+    .input-row span {
+      color: #888;
+      font-size: 0.8rem;
+    }
+
+    .time-input::-webkit-calendar-picker-indicator,
+    input[type="time"]::-webkit-calendar-picker-indicator {
+      filter: invert(1);
+      cursor: pointer;
+      margin-left: 2px;
+      padding: 0;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(135deg, #4ade80, #22c55e);
+      border: none;
+      border-radius: 8px;
+      color: #000;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    .btn:hover {
+      opacity: 0.9;
+    }
+
+    .btn-secondary {
+      background: rgba(255,255,255,0.1);
+      color: white;
+    }
+
+    .btn-small {
+      background: rgba(255,255,255,0.1);
+      border: none;
+      border-radius: 6px;
+      color: #f87171;
+      cursor: pointer;
+    }
+
+    .btn-small:hover {
+      background: rgba(248, 113, 113, 0.2);
+    }
+
+    .stats-row {
+      display: flex;
+      justify-content: space-around;
+      text-align: center;
+      margin-top: 15px;
+      padding-top: 15px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .stat-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #22d3ee;
+    }
+
+    .stat-label {
+      font-size: 0.65rem;
+      color: #666;
+      text-transform: uppercase;
+    }
+
+    .saved-msg {
+      display: none;
+      text-align: center;
+      padding: 10px;
+      background: rgba(74, 222, 128, 0.1);
+      border-radius: 6px;
+      color: #4ade80;
+      font-size: 0.85rem;
+      margin-top: 10px;
+    }
+
+    .reset-link {
+      display: block;
+      text-align: center;
+      margin-top: 15px;
+      color: #555;
+      font-size: 0.75rem;
+      cursor: pointer;
+    }
+
+    .reset-link:hover {
+      color: #f87171;
+    }
+
+    .progress-card {
+      background: rgba(255,255,255,0.05);
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 10px;
+    }
+
+    .progress-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .progress-icon {
+      font-size: 1.3rem;
+    }
+
+    .progress-title {
+      flex: 1;
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+
+    .progress-days {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #4ade80;
+    }
+
+    .btn-timeline {
+      width: 100%;
+      margin-top: 8px;
+      padding: 8px;
+      background: rgba(74, 222, 128, 0.1);
+      border: 1px solid rgba(74, 222, 128, 0.3);
+      border-radius: 6px;
+      color: #4ade80;
+      font-size: 0.8rem;
+      cursor: pointer;
+    }
+
+    .btn-timeline:hover {
+      background: rgba(74, 222, 128, 0.2);
+    }
+
+    #nofapCard .progress-days {
+      color: #a855f7;
+    }
+
+    #nofapCard .btn-timeline {
+      background: rgba(168, 85, 247, 0.1);
+      border-color: rgba(168, 85, 247, 0.3);
+      color: #a855f7;
+    }
+
+    #nofapCard .btn-timeline:hover {
+      background: rgba(168, 85, 247, 0.2);
+    }
+
+    #alcoholCard .progress-days {
+      color: #fbbf24;
+    }
+
+    #alcoholCard .btn-timeline {
+      background: rgba(251, 191, 36, 0.1);
+      border-color: rgba(251, 191, 36, 0.3);
+      color: #fbbf24;
+    }
+
+    #alcoholCard .btn-timeline:hover {
+      background: rgba(251, 191, 36, 0.2);
+    }
+
+    .crisis-btn {
+      background: linear-gradient(135deg, #f87171, #fb923c);
+      margin-bottom: 10px;
+    }
+
+    .crisis-btn:hover {
+      opacity: 0.9;
+    }
+
+    .voice-btn {
+      background: linear-gradient(135deg, #a855f7, #6366f1);
+      margin-bottom: 15px;
+    }
+
+    .quick-tools {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .quick-tool {
+      flex: 1;
+      padding: 12px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      font-size: 1.5rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .quick-tool:hover {
+      background: rgba(255,255,255,0.1);
+      border-color: rgba(255,255,255,0.2);
+    }
+
+    .api-key-input {
+      width: 100%;
+      padding: 10px;
+      background: rgba(0,0,0,0.3);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 6px;
+      color: white;
+      font-size: 0.8rem;
+      font-family: monospace;
+    }
+
+    .api-key-input:focus {
+      outline: none;
+      border-color: #4ade80;
+    }
+
+    .api-note {
+      font-size: 0.7rem;
+      color: #64748b;
+      margin-top: 5px;
+    }
+
+    .limit-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 6px;
+      margin-bottom: 8px;
+    }
+
+    .limit-site {
+      flex: 1;
+      font-size: 0.85rem;
+      color: #94a3b8;
+    }
+
+    .limit-time {
+      font-size: 0.85rem;
+      color: #fbbf24;
+      font-weight: 500;
+    }
+
+    .limit-used {
+      font-size: 0.75rem;
+      color: #64748b;
+    }
+
+    .limit-remove {
+      padding: 4px 8px;
+      background: rgba(248, 113, 113, 0.2);
+      border: none;
+      border-radius: 4px;
+      color: #f87171;
+      cursor: pointer;
+      font-size: 0.75rem;
+    }
+
+    .limit-remove:hover {
+      background: rgba(248, 113, 113, 0.3);
+    }
+
+    .sticky-save {
+      position: sticky;
+      bottom: 0;
+      background: linear-gradient(to top, #1a1a2e 80%, transparent);
+      padding: 15px 0 10px 0;
+      margin-top: 15px;
+    }
+
+    .sticky-save .btn {
+      margin-top: 0;
+    }
+
+    body {
+      padding-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Quit Reminder</h1>
+  <p class="subtitle">Stay accountable. Stay strong.</p>
+
+  <button class="btn crisis-btn" id="crisisBtn">I Need Help Right Now</button>
+  <button class="btn voice-btn" id="voiceBtn">Hear From Yourself</button>
+
+  <div class="quick-tools">
+    <button class="quick-tool" id="copingBtn" title="Coping Tools">🧘</button>
+    <button class="quick-tool" id="triggerBtn" title="Log Trigger">📝</button>
+    <button class="quick-tool" id="timerBtn" title="Craving Timer">⏱️</button>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Settings</div>
+
+    <div class="toggle-row">
+      <span class="toggle-label">Reminders enabled</span>
+      <div class="toggle active" id="enabledToggle"></div>
+    </div>
+
+    <div class="input-row">
+      <label>Reminder interval</label>
+      <input type="number" id="intervalInput" min="5" max="480" value="40">
+      <span>min</span>
+    </div>
+
+    <div class="input-row">
+      <label>Daily cost (for savings calc)</label>
+      <span>$</span>
+      <input type="number" id="dailyCostInput" min="0" max="100" value="10">
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Your Affirmation</div>
+    <textarea id="affirmationInput">I don't need to drink. I don't need nicotine. I am stronger than my cravings.</textarea>
+  </div>
+
+  <div class="section">
+    <div class="section-title">NoFap Mode</div>
+
+    <div class="toggle-row">
+      <span class="toggle-label">Track NoFap streak</span>
+      <div class="toggle" id="nofapToggle"></div>
+    </div>
+
+    <div id="nofapSection" style="display: none;">
+      <textarea id="nofapAffirmation" style="min-height: 60px; margin-bottom: 10px;">I am in control of my urges. I don't need porn. My energy is better spent elsewhere.</textarea>
+      <div class="input-row">
+        <label>NoFap days</label>
+        <input type="number" id="nofapDays" min="0" value="0" style="width: 60px;">
+        <button class="btn-small" id="resetNofapBtn" style="padding: 6px 12px; font-size: 0.75rem; margin-left: auto;">Reset</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Supplement Reminders</div>
+
+    <div class="toggle-row">
+      <span class="toggle-label">Supplement reminders</span>
+      <div class="toggle active" id="supplementToggle"></div>
+    </div>
+
+    <div class="input-row">
+      <label>Morning</label>
+      <input type="time" id="timeMorning" value="08:00" class="time-input">
+    </div>
+    <div class="input-row">
+      <label>Afternoon</label>
+      <input type="time" id="timeAfternoon" value="14:00" class="time-input">
+    </div>
+    <div class="input-row">
+      <label>Dinner</label>
+      <input type="time" id="timeDinner" value="18:30" class="time-input">
+    </div>
+    <div class="input-row">
+      <label>Night</label>
+      <input type="time" id="timeNight" value="21:30" class="time-input">
+    </div>
+  </div>
+
+  <div class="saved-msg" id="savedMsg">Settings saved!</div>
+
+  <div class="section">
+    <div class="section-title">Your Progress</div>
+
+    <div class="progress-card" id="nicotineCard">
+      <div class="progress-header">
+        <span class="progress-icon">🚬</span>
+        <span class="progress-title">Nicotine-Free</span>
+        <span class="progress-days"><span id="nicotineDays">0</span> days</span>
+      </div>
+      <button class="btn-timeline" id="viewNicotineBtn">View Timeline</button>
+    </div>
+
+    <div class="progress-card" id="alcoholCard">
+      <div class="progress-header">
+        <span class="progress-icon">🍺</span>
+        <span class="progress-title">Alcohol-Free</span>
+        <span class="progress-days"><span id="alcoholDays">0</span> days</span>
+      </div>
+      <button class="btn-timeline" id="viewAlcoholBtn">View Timeline</button>
+    </div>
+
+    <div class="progress-card" id="nofapCard" style="display: none;">
+      <div class="progress-header">
+        <span class="progress-icon">💪</span>
+        <span class="progress-title">NoFap Streak</span>
+        <span class="progress-days"><span id="nofapDaysDisplay">0</span> days</span>
+      </div>
+      <button class="btn-timeline" id="viewNofapBtn">View Timeline</button>
+    </div>
+  </div>
+
+  <div class="stats-row">
+    <div>
+      <div class="stat-value" id="daysClean">0</div>
+      <div class="stat-label">Total Days</div>
+    </div>
+    <div>
+      <div class="stat-value" id="timesCompleted">0</div>
+      <div class="stat-label">Affirmations</div>
+    </div>
+    <div>
+      <div class="stat-value" id="moneySaved">$0</div>
+      <div class="stat-label">Saved</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Daily Time Limits</div>
+
+    <div class="toggle-row">
+      <span class="toggle-label">Limit time on sites</span>
+      <div class="toggle" id="timeLimitToggle"></div>
+    </div>
+
+    <div id="timeLimitSettings" style="display: none;">
+      <div id="timeLimitsList"></div>
+      <div class="add-limit-row" style="display: flex; gap: 8px; margin-top: 10px;">
+        <input type="text" id="newLimitSite" placeholder="site (e.g. youtube.com)" style="flex: 2; padding: 8px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; color: white; font-size: 0.85rem;">
+        <input type="number" id="newLimitMinutes" placeholder="min" min="1" max="480" value="30" style="width: 60px; padding: 8px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; color: white; text-align: center; font-size: 0.85rem;">
+        <button id="addLimitBtn" style="padding: 8px 12px; background: rgba(74, 222, 128, 0.2); border: 1px solid #4ade80; border-radius: 6px; color: #4ade80; cursor: pointer; font-size: 0.85rem;">+</button>
+      </div>
+      <button id="refreshUsageBtn" style="margin-top: 8px; padding: 6px 12px; background: rgba(255,255,255,0.1); border: none; border-radius: 4px; color: #94a3b8; cursor: pointer; font-size: 0.75rem;">Refresh Usage</button>
+      <button id="resetUsageBtn" style="margin-top: 8px; margin-left: 5px; padding: 6px 12px; background: rgba(248,113,113,0.1); border: none; border-radius: 4px; color: #f87171; cursor: pointer; font-size: 0.75rem;">Reset Today</button>
+      <p class="api-note" style="margin-top: 8px;">Add sites you want to limit daily usage on</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Bedtime Blocker</div>
+
+    <div class="toggle-row">
+      <span class="toggle-label">Block sites after bedtime</span>
+      <div class="toggle" id="bedtimeToggle"></div>
+    </div>
+
+    <div id="bedtimeSettings" style="display: none;">
+      <div class="input-row">
+        <label>Bedtime</label>
+        <input type="time" id="bedtimeInput" value="22:00" class="time-input">
+      </div>
+      <div class="input-row">
+        <label>Wake time</label>
+        <input type="time" id="wakeTimeInput" value="07:00" class="time-input">
+      </div>
+      <div style="margin-top: 10px;">
+        <label style="font-size: 0.85rem; color: #94a3b8; display: block; margin-bottom: 5px;">Sites to block (one per line)</label>
+        <textarea id="blockedSitesInput" style="min-height: 120px; font-size: 0.8rem;">youtube.com
+twitter.com
+x.com
+facebook.com
+instagram.com
+tiktok.com
+reddit.com
+twitch.tv
+netflix.com
+hulu.com
+primevideo.com
+movies.do</textarea>
+      </div>
+      <p class="api-note" style="margin-top: 5px;">Add any site you want blocked after bedtime</p>
+    </div>
+  </div>
+
+  <button class="btn btn-secondary" id="weeklySchedulerBtn">Weekly Scheduler</button>
+  <button class="btn btn-secondary" id="dailyHabitsBtn" style="background: rgba(168, 85, 247, 0.2); color: #a855f7;">Daily Habits</button>
+  <button class="btn btn-secondary" id="viewSupplementsBtn">Supplement Schedule</button>
+  <button class="btn btn-secondary" id="viewCookingBtn">Cooking Guide</button>
+  <button class="btn btn-secondary" id="recipeChatBtn" style="background: rgba(251, 146, 60, 0.2); color: #fb923c;">Recipe Chat (AI)</button>
+  <button class="btn btn-secondary" id="alarmClockBtn">Smart Alarm Clock</button>
+  <button class="btn btn-secondary" id="resetDayBtn">Reset Start Date to Today</button>
+
+  <div class="section">
+    <div class="section-title">AI Support (Claude)</div>
+    <input type="password" class="api-key-input" id="apiKeyInput" placeholder="Enter your Claude API key">
+    <p class="api-note">Powers the "I Need Help" chat. Get a key at console.anthropic.com</p>
+  </div>
+
+  <span class="reset-link" id="resetAllLink">Reset all data</span>
+
+  <div class="sticky-save">
+    <button class="btn" id="saveBtn">Save Settings</button>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

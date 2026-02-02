@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Time for Bed</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(180deg, #0a0a1a 0%, #1a1a3a 100%);
+      color: white;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+      text-align: center;
+    }
+
+    .moon {
+      font-size: 6rem;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 15px;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .blocked-site {
+      font-size: 1.1rem;
+      color: #64748b;
+      margin-bottom: 30px;
+    }
+
+    .blocked-site span {
+      color: #f87171;
+    }
+
+    .message {
+      font-size: 1.2rem;
+      color: #94a3b8;
+      max-width: 500px;
+      line-height: 1.7;
+      margin-bottom: 40px;
+    }
+
+    .current-time {
+      font-size: 3rem;
+      font-weight: 200;
+      color: #6366f1;
+      margin-bottom: 10px;
+    }
+
+    .bedtime-info {
+      color: #64748b;
+      margin-bottom: 40px;
+    }
+
+    .why-box {
+      background: rgba(99, 102, 241, 0.1);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      border-radius: 12px;
+      padding: 20px;
+      max-width: 500px;
+      margin-bottom: 40px;
+    }
+
+    .why-box h3 {
+      color: #8b5cf6;
+      margin-bottom: 10px;
+    }
+
+    .why-box p {
+      color: #94a3b8;
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+
+    .override-section {
+      background: rgba(255,255,255,0.03);
+      border-radius: 16px;
+      padding: 25px;
+      max-width: 450px;
+      width: 100%;
+    }
+
+    .override-title {
+      font-size: 0.85rem;
+      color: #64748b;
+      margin-bottom: 15px;
+    }
+
+    .override-prompt {
+      color: #fbbf24;
+      font-size: 1rem;
+      margin-bottom: 15px;
+      line-height: 1.5;
+    }
+
+    .override-input {
+      width: 100%;
+      padding: 15px;
+      background: rgba(0,0,0,0.3);
+      border: 2px solid rgba(255,255,255,0.2);
+      border-radius: 10px;
+      color: white;
+      font-size: 1rem;
+      margin-bottom: 15px;
+    }
+
+    .override-input:focus {
+      outline: none;
+      border-color: #f87171;
+    }
+
+    .override-input.correct {
+      border-color: #4ade80;
+    }
+
+    .override-btn {
+      width: 100%;
+      padding: 15px;
+      background: rgba(248, 113, 113, 0.2);
+      border: 2px solid #f87171;
+      border-radius: 10px;
+      color: #f87171;
+      font-size: 1rem;
+      cursor: pointer;
+      margin-bottom: 10px;
+    }
+
+    .override-btn:hover {
+      background: rgba(248, 113, 113, 0.3);
+    }
+
+    .override-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .override-warning {
+      font-size: 0.8rem;
+      color: #64748b;
+    }
+
+    .time-options {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    .time-option {
+      flex: 1;
+      padding: 12px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      color: #94a3b8;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+
+    .time-option:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .time-option.selected {
+      border-color: #f87171;
+      color: #f87171;
+    }
+
+    .go-to-bed-btn {
+      width: 100%;
+      padding: 15px;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      border: none;
+      border-radius: 10px;
+      color: white;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+
+    .go-to-bed-btn:hover {
+      opacity: 0.9;
+    }
+
+    .stats {
+      margin-top: 30px;
+      padding: 15px;
+      background: rgba(0,0,0,0.2);
+      border-radius: 10px;
+    }
+
+    .stats-title {
+      font-size: 0.75rem;
+      color: #64748b;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 5px 0;
+      color: #94a3b8;
+      font-size: 0.9rem;
+    }
+
+    .stat-value {
+      color: #6366f1;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="moon">🌙</div>
+  <h1>It's Past Your Bedtime</h1>
+
+  <div class="blocked-site">
+    You tried to visit: <span id="blockedUrl">youtube.com</span>
+  </div>
+
+  <div class="current-time" id="currentTime">11:30 PM</div>
+  <div class="bedtime-info">Your bedtime is set to <span id="bedtimeDisplay">10:30 PM</span></div>
+
+  <div class="message">
+    Sleep is when your body heals. Your brain consolidates memories.
+    Your willpower recharges. Scrolling at 2am is stealing from tomorrow-you.
+  </div>
+
+  <div class="why-box">
+    <h3>Why this matters for recovery</h3>
+    <p>
+      Poor sleep makes cravings stronger. When you're tired, your prefrontal cortex
+      (the part that says "no") gets weaker. Late night scrolling leads to late night
+      bad decisions. Protect your sleep = protect your recovery.
+    </p>
+  </div>
+
+  <div class="override-section">
+    <div class="override-title">Need to override? (Be honest with yourself)</div>
+
+    <div class="override-prompt" id="overridePrompt">
+      Type: "I am choosing to stay up late and I accept the consequences"
+    </div>
+
+    <input type="text" class="override-input" id="overrideInput" placeholder="Type the phrase above...">
+
+    <div class="time-options">
+      <button class="time-option selected" data-minutes="15">15 min</button>
+      <button class="time-option" data-minutes="30">30 min</button>
+      <button class="time-option" data-minutes="60">1 hour</button>
+    </div>
+
+    <button class="override-btn" id="overrideBtn" disabled>Get Time Extension</button>
+    <div class="override-warning">You've used <span id="overrideCount">0</span> overrides this week</div>
+  </div>
+
+  <button class="go-to-bed-btn" id="goToBedBtn">Actually, I'll Go to Bed</button>
+
+  <div class="stats">
+    <div class="stats-title">This week</div>
+    <div class="stat-row">
+      <span>Times you went to bed on time</span>
+      <span class="stat-value" id="onTimeCount">0</span>
+    </div>
+    <div class="stat-row">
+      <span>Times you overrode</span>
+      <span class="stat-value" id="overrideWeekCount">0</span>
+    </div>
+  </div>
+
+  <script src="bedtime-block.js"></script>
+</body>
+</html>

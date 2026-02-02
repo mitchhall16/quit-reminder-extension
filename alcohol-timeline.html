@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Alcohol Recovery Timeline</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(180deg, #1e1b4b 0%, #312e81 100%);
+      color: white;
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+      background: linear-gradient(135deg, #fbbf24, #f59e0b);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #64748b;
+      margin-bottom: 40px;
+    }
+
+    .current-day {
+      text-align: center;
+      margin-bottom: 40px;
+      padding: 20px;
+      background: rgba(251, 191, 36, 0.1);
+      border: 2px solid #fbbf24;
+      border-radius: 16px;
+    }
+
+    .current-day-label {
+      font-size: 0.9rem;
+      color: #fbbf24;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    .current-day-number {
+      font-size: 4rem;
+      font-weight: 900;
+      color: #fbbf24;
+    }
+
+    .streak-status {
+      margin-top: 10px;
+      font-size: 1.1rem;
+      color: #fde68a;
+    }
+
+    /* Timeline */
+    .timeline {
+      position: relative;
+      padding-left: 40px;
+    }
+
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 15px;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+      background: linear-gradient(180deg, #ef4444, #f97316, #eab308, #22c55e, #06b6d4);
+      border-radius: 2px;
+    }
+
+    .phase {
+      position: relative;
+      margin-bottom: 30px;
+      padding: 20px;
+      background: rgba(255,255,255,0.03);
+      border-radius: 12px;
+      border-left: 3px solid transparent;
+    }
+
+    .phase.current {
+      background: rgba(251, 191, 36, 0.1);
+      border-left-color: #fbbf24;
+      box-shadow: 0 0 30px rgba(251, 191, 36, 0.2);
+    }
+
+    .phase.completed {
+      opacity: 0.6;
+    }
+
+    .phase.completed::after {
+      content: '✓';
+      position: absolute;
+      right: 20px;
+      top: 20px;
+      font-size: 1.5rem;
+      color: #fbbf24;
+    }
+
+    .phase::before {
+      content: '';
+      position: absolute;
+      left: -33px;
+      top: 25px;
+      width: 16px;
+      height: 16px;
+      background: #1e1b4b;
+      border: 3px solid #64748b;
+      border-radius: 50%;
+    }
+
+    .phase.completed::before {
+      background: #fbbf24;
+      border-color: #fbbf24;
+    }
+
+    .phase.current::before {
+      background: #fbbf24;
+      border-color: #fbbf24;
+      box-shadow: 0 0 10px #fbbf24;
+    }
+
+    .phase-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 15px;
+    }
+
+    .phase-time {
+      font-size: 0.75rem;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .phase-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin-bottom: 5px;
+    }
+
+    .phase-difficulty {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .difficulty-extreme {
+      background: rgba(239, 68, 68, 0.2);
+      color: #ef4444;
+    }
+
+    .difficulty-hard {
+      background: rgba(249, 115, 22, 0.2);
+      color: #f97316;
+    }
+
+    .difficulty-medium {
+      background: rgba(234, 179, 8, 0.2);
+      color: #eab308;
+    }
+
+    .difficulty-easy {
+      background: rgba(34, 197, 94, 0.2);
+      color: #22c55e;
+    }
+
+    .difficulty-free {
+      background: rgba(6, 182, 212, 0.2);
+      color: #06b6d4;
+    }
+
+    .phase-body {
+      color: #94a3b8;
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+
+    .symptoms {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .symptom {
+      padding: 6px 12px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 20px;
+      font-size: 0.8rem;
+      color: #cbd5e1;
+    }
+
+    .symptom.good {
+      background: rgba(251, 191, 36, 0.1);
+      color: #fde68a;
+    }
+
+    .tips {
+      margin-top: 15px;
+      padding: 12px;
+      background: rgba(0,0,0,0.2);
+      border-radius: 8px;
+    }
+
+    .tips-title {
+      font-size: 0.75rem;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+
+    .tips-list {
+      list-style: none;
+      font-size: 0.85rem;
+      color: #94a3b8;
+    }
+
+    .tips-list li {
+      padding: 4px 0;
+    }
+
+    .tips-list li::before {
+      content: '→ ';
+      color: #fbbf24;
+    }
+
+    /* Healing section */
+    .healing-section {
+      margin-top: 50px;
+      padding: 30px;
+      background: rgba(255,255,255,0.03);
+      border-radius: 16px;
+    }
+
+    .healing-section h2 {
+      font-size: 1.5rem;
+      margin-bottom: 20px;
+      color: #fbbf24;
+    }
+
+    .healing-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+    }
+
+    .healing-item {
+      padding: 20px;
+      background: rgba(0,0,0,0.2);
+      border-radius: 12px;
+      border-left: 3px solid #fbbf24;
+    }
+
+    .healing-time {
+      font-size: 0.75rem;
+      color: #fbbf24;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 5px;
+    }
+
+    .healing-title {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .healing-desc {
+      font-size: 0.85rem;
+      color: #64748b;
+    }
+
+    /* Progress bar */
+    .progress-section {
+      margin-top: 50px;
+    }
+
+    .progress-section h2 {
+      font-size: 1.2rem;
+      margin-bottom: 15px;
+      color: #fde68a;
+    }
+
+    .progress-bar-container {
+      background: rgba(0,0,0,0.3);
+      border-radius: 10px;
+      height: 30px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #ef4444, #f97316, #eab308, #22c55e);
+      border-radius: 10px;
+      transition: width 0.5s ease;
+    }
+
+    .progress-bar-text {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 0.85rem;
+    }
+
+    .milestone-markers {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 8px;
+      font-size: 0.7rem;
+      color: #64748b;
+    }
+
+    /* Money saved */
+    .money-section {
+      margin-top: 30px;
+      text-align: center;
+      padding: 25px;
+      background: rgba(251, 191, 36, 0.05);
+      border-radius: 12px;
+      border: 1px solid rgba(251, 191, 36, 0.2);
+    }
+
+    .money-label {
+      font-size: 0.85rem;
+      color: #64748b;
+      margin-bottom: 5px;
+    }
+
+    .money-amount {
+      font-size: 3rem;
+      font-weight: 900;
+      color: #fbbf24;
+    }
+
+    .money-note {
+      font-size: 0.8rem;
+      color: #64748b;
+      margin-top: 10px;
+    }
+
+    /* Warning box */
+    .warning-box {
+      margin-top: 40px;
+      padding: 20px;
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      border-radius: 12px;
+    }
+
+    .warning-box h3 {
+      color: #ef4444;
+      margin-bottom: 10px;
+    }
+
+    .warning-box p {
+      color: #94a3b8;
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-top: 30px;
+      color: #64748b;
+      text-decoration: none;
+      font-size: 0.9rem;
+    }
+
+    .back-link:hover {
+      color: #fbbf24;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Alcohol Recovery Timeline</h1>
+    <p class="subtitle">Your liver is healing. Your mind is clearing.</p>
+
+    <div class="current-day">
+      <div class="current-day-label">Sober For</div>
+      <div class="current-day-number">Day <span id="dayNumber">0</span></div>
+      <div class="streak-status" id="streakStatus">Starting your journey</div>
+    </div>
+
+    <div class="timeline" id="timeline">
+      <!-- Phases will be inserted here -->
+    </div>
+
+    <div class="progress-section">
+      <h2>30-Day Sobriety Progress</h2>
+      <div class="progress-bar-container">
+        <div class="progress-bar-fill" id="progressFill"></div>
+        <div class="progress-bar-text" id="progressText">0%</div>
+      </div>
+      <div class="milestone-markers">
+        <span>Day 1</span>
+        <span>Day 3</span>
+        <span>Week 1</span>
+        <span>Week 2</span>
+        <span>Day 21</span>
+        <span>Day 30</span>
+      </div>
+    </div>
+
+    <div class="money-section">
+      <div class="money-label">Money Saved from Not Drinking</div>
+      <div class="money-amount" id="moneySaved">$0</div>
+      <div class="money-note">Based on average alcohol spending</div>
+    </div>
+
+    <div class="healing-section">
+      <h2>How Your Body Is Healing</h2>
+      <div class="healing-grid">
+        <div class="healing-item">
+          <div class="healing-time">8 Hours</div>
+          <div class="healing-title">Blood Alcohol Drops</div>
+          <div class="healing-desc">Blood alcohol returns to zero. Hangover symptoms may begin.</div>
+        </div>
+        <div class="healing-item">
+          <div class="healing-time">24 Hours</div>
+          <div class="healing-title">Blood Sugar Stabilizes</div>
+          <div class="healing-desc">Glucose levels normalize. Anxiety may peak.</div>
+        </div>
+        <div class="healing-item">
+          <div class="healing-time">48 Hours</div>
+          <div class="healing-title">Detox Underway</div>
+          <div class="healing-desc">Body actively eliminating toxins. Sleep may be difficult.</div>
+        </div>
+        <div class="healing-item">
+          <div class="healing-time">72 Hours</div>
+          <div class="healing-title">Worst is Over</div>
+          <div class="healing-desc">Physical withdrawal symptoms peak then begin to subside.</div>
+        </div>
+        <div class="healing-item">
+          <div class="healing-time">1 Week</div>
+          <div class="healing-title">Sleep Improves</div>
+          <div class="healing-desc">REM sleep returns. You wake up feeling rested.</div>
+        </div>
+        <div class="healing-item">
+          <div class="healing-time">2 Weeks</div>
+          <div class="healing-title">Liver Healing</div>
+          <div class="healing-desc">Liver fat reduces. Stomach lining begins to heal.</div>
+        </div>
+        <div class="healing-item">
+          <div class="healing-time">1 Month</div>
+          <div class="healing-title">Visible Changes</div>
+          <div class="healing-desc">Skin clears, weight loss begins, blood pressure drops.</div>
+        </div>
+        <div class="healing-item">
+          <div class="healing-time">3 Months</div>
+          <div class="healing-title">Major Recovery</div>
+          <div class="healing-desc">Liver fully regenerating. Mental clarity significantly improved.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="warning-box">
+      <h3>Important Medical Note</h3>
+      <p>If you've been drinking heavily for a long time, alcohol withdrawal can be dangerous. Symptoms like severe shaking, confusion, fever, or seizures require immediate medical attention. Consider consulting a doctor before quitting if you drink heavily daily.</p>
+    </div>
+
+    <a href="#" class="back-link" id="backLink">← Back to Extension</a>
+  </div>
+
+  <script src="alcohol-timeline.js"></script>
+</body>
+</html>

@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Supplement Reminder</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      color: white;
+    }
+
+    .container {
+      text-align: center;
+      padding: 40px;
+      max-width: 500px;
+    }
+
+    .pill-icon {
+      font-size: 80px;
+      margin-bottom: 20px;
+      animation: bounce 1s ease-in-out infinite;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 10px;
+      background: linear-gradient(135deg, #f59e0b, #fbbf24);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .time-label {
+      font-size: 1.2rem;
+      color: #888;
+      margin-bottom: 30px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    .supplements-list {
+      background: rgba(255,255,255,0.05);
+      border-radius: 16px;
+      padding: 25px;
+      margin-bottom: 30px;
+      text-align: left;
+    }
+
+    .supplement-item {
+      display: flex;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .supplement-item:last-child {
+      border-bottom: none;
+    }
+
+    .supplement-item input[type="checkbox"] {
+      width: 24px;
+      height: 24px;
+      margin-right: 15px;
+      accent-color: #4ade80;
+      cursor: pointer;
+    }
+
+    .supplement-name {
+      flex: 1;
+      font-size: 1.1rem;
+    }
+
+    .supplement-dose {
+      color: #888;
+      font-size: 0.9rem;
+    }
+
+    .tip {
+      background: rgba(245, 158, 11, 0.1);
+      border-left: 3px solid #f59e0b;
+      padding: 15px;
+      margin-bottom: 25px;
+      text-align: left;
+      border-radius: 0 8px 8px 0;
+      font-size: 0.9rem;
+      color: #fbbf24;
+    }
+
+    .btn {
+      padding: 15px 40px;
+      font-size: 1.1rem;
+      border: none;
+      border-radius: 30px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s;
+      margin: 5px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #4ade80, #22c55e);
+      color: #000;
+    }
+
+    .btn-secondary {
+      background: rgba(255,255,255,0.1);
+      color: white;
+    }
+
+    .btn:hover {
+      transform: scale(1.05);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="pill-icon">💊</div>
+    <h1>Time for Supplements!</h1>
+    <div class="time-label" id="timeLabel">Morning</div>
+
+    <div class="supplements-list" id="supplementsList">
+      <!-- Populated by JS -->
+    </div>
+
+    <div class="tip" id="tip"></div>
+
+    <button class="btn btn-primary" id="doneBtn" disabled>Mark as Taken</button>
+    <button class="btn btn-secondary" id="snoozeBtn">Snooze 15 min</button>
+  </div>
+
+  <script src="supplement-reminder.js"></script>
+</body>
+</html>

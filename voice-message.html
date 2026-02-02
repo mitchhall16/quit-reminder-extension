@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Message To Yourself</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+      color: white;
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 2rem;
+      margin-bottom: 10px;
+      background: linear-gradient(135deg, #f87171, #fb923c);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #64748b;
+      margin-bottom: 40px;
+    }
+
+    .mode-toggle {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 30px;
+    }
+
+    .mode-btn {
+      flex: 1;
+      padding: 15px;
+      background: rgba(255,255,255,0.05);
+      border: 2px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      color: #94a3b8;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .mode-btn:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .mode-btn.active {
+      background: rgba(248, 113, 113, 0.2);
+      border-color: #f87171;
+      color: #f87171;
+    }
+
+    .section {
+      background: rgba(255,255,255,0.03);
+      border-radius: 16px;
+      padding: 25px;
+      margin-bottom: 20px;
+    }
+
+    .section-title {
+      font-size: 0.8rem;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 15px;
+    }
+
+    .record-area {
+      text-align: center;
+      padding: 40px 20px;
+    }
+
+    .record-btn {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .record-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 30px rgba(239, 68, 68, 0.4);
+    }
+
+    .record-btn.recording {
+      animation: pulse 1s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+      50% { box-shadow: 0 0 0 20px rgba(239, 68, 68, 0); }
+    }
+
+    .record-btn svg {
+      width: 40px;
+      height: 40px;
+      fill: white;
+    }
+
+    .record-status {
+      font-size: 1.1rem;
+      color: #94a3b8;
+      margin-bottom: 10px;
+    }
+
+    .record-time {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #ef4444;
+      font-family: monospace;
+    }
+
+    .tip-box {
+      background: rgba(251, 191, 36, 0.1);
+      border: 1px solid rgba(251, 191, 36, 0.3);
+      border-radius: 10px;
+      padding: 15px;
+      margin-top: 20px;
+    }
+
+    .tip-box h4 {
+      color: #fbbf24;
+      font-size: 0.85rem;
+      margin-bottom: 8px;
+    }
+
+    .tip-box p {
+      color: #94a3b8;
+      font-size: 0.85rem;
+      line-height: 1.5;
+    }
+
+    .recordings-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .recording-item {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      padding: 15px;
+      background: rgba(0,0,0,0.2);
+      border-radius: 10px;
+    }
+
+    .recording-play-btn {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #4ade80, #22c55e);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .recording-play-btn svg {
+      width: 24px;
+      height: 24px;
+      fill: white;
+      margin-left: 3px;
+    }
+
+    .recording-play-btn.playing {
+      background: linear-gradient(135deg, #f87171, #ef4444);
+    }
+
+    .recording-play-btn.playing svg {
+      margin-left: 0;
+    }
+
+    .recording-info {
+      flex: 1;
+    }
+
+    .recording-label {
+      font-size: 1rem;
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+
+    .recording-meta {
+      font-size: 0.8rem;
+      color: #64748b;
+    }
+
+    .recording-delete {
+      padding: 8px;
+      background: none;
+      border: none;
+      color: #64748b;
+      cursor: pointer;
+    }
+
+    .recording-delete:hover {
+      color: #ef4444;
+    }
+
+    .no-recordings {
+      text-align: center;
+      padding: 40px;
+      color: #64748b;
+    }
+
+    .no-recordings p {
+      margin-bottom: 10px;
+    }
+
+    .listen-section {
+      display: none;
+    }
+
+    .listen-section.active {
+      display: block;
+    }
+
+    .record-section {
+      display: none;
+    }
+
+    .record-section.active {
+      display: block;
+    }
+
+    .big-play-btn {
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #4ade80, #22c55e);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 30px auto;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .big-play-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 40px rgba(74, 222, 128, 0.4);
+    }
+
+    .big-play-btn svg {
+      width: 60px;
+      height: 60px;
+      fill: white;
+      margin-left: 8px;
+    }
+
+    .big-play-btn.playing {
+      background: linear-gradient(135deg, #f87171, #ef4444);
+    }
+
+    .big-play-btn.playing svg {
+      margin-left: 0;
+    }
+
+    .encouragement {
+      text-align: center;
+      font-size: 1.1rem;
+      color: #94a3b8;
+      margin-bottom: 20px;
+      line-height: 1.6;
+    }
+
+    .label-input {
+      width: 100%;
+      padding: 12px;
+      background: rgba(0,0,0,0.3);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 8px;
+      color: white;
+      font-size: 1rem;
+      margin-top: 15px;
+    }
+
+    .label-input:focus {
+      outline: none;
+      border-color: #f87171;
+    }
+
+    .save-btn {
+      width: 100%;
+      padding: 15px;
+      background: linear-gradient(135deg, #4ade80, #22c55e);
+      border: none;
+      border-radius: 10px;
+      color: white;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 15px;
+    }
+
+    .save-btn:hover {
+      opacity: 0.9;
+    }
+
+    .save-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-top: 30px;
+      color: #64748b;
+      text-decoration: none;
+      font-size: 0.9rem;
+    }
+
+    .back-link:hover {
+      color: white;
+    }
+
+    .category-select {
+      width: 100%;
+      padding: 12px;
+      background: rgba(0,0,0,0.3);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 8px;
+      color: white;
+      font-size: 1rem;
+      margin-bottom: 10px;
+    }
+
+    .category-select option {
+      background: #1e293b;
+    }
+
+    .script-box {
+      background: rgba(74, 222, 128, 0.1);
+      border: 1px solid rgba(74, 222, 128, 0.3);
+      border-radius: 10px;
+      padding: 15px;
+      margin-top: 20px;
+      margin-bottom: 15px;
+    }
+
+    .script-box h4 {
+      color: #4ade80;
+      font-size: 0.85rem;
+      margin-bottom: 12px;
+    }
+
+    .script-text {
+      color: #e2e8f0;
+      font-size: 1rem;
+      line-height: 1.8;
+      white-space: pre-wrap;
+    }
+
+    .script-text p {
+      margin-bottom: 15px;
+    }
+
+    .script-text .pause {
+      color: #64748b;
+      font-style: italic;
+      font-size: 0.85rem;
+    }
+
+    .script-toggle {
+      margin-top: 12px;
+      padding: 8px 16px;
+      background: rgba(255,255,255,0.1);
+      border: none;
+      border-radius: 6px;
+      color: #94a3b8;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+
+    .script-toggle:hover {
+      background: rgba(255,255,255,0.15);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Message To Yourself</h1>
+    <p class="subtitle">Record when you're strong. Listen when you're struggling.</p>
+
+    <div class="mode-toggle">
+      <button class="mode-btn active" id="listenModeBtn">Listen</button>
+      <button class="mode-btn" id="recordModeBtn">Record New</button>
+    </div>
+
+    <!-- LISTEN MODE -->
+    <div class="listen-section active" id="listenSection">
+      <div class="section">
+        <p class="encouragement">
+          You recorded these messages when you were clear-headed.<br>
+          Trust past-you. They knew what they were talking about.
+        </p>
+
+        <div class="recordings-list" id="recordingsList">
+          <div class="no-recordings" id="noRecordings">
+            <p>No recordings yet.</p>
+            <p>Switch to "Record New" to leave a message for your future self.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RECORD MODE -->
+    <div class="record-section" id="recordSection">
+      <div class="section">
+        <div class="section-title">What's this message for?</div>
+        <select class="category-select" id="categorySelect">
+          <option value="general">General - When I'm struggling</option>
+          <option value="nicotine">Nicotine craving</option>
+          <option value="alcohol">Alcohol craving</option>
+          <option value="nofap">NoFap urge</option>
+          <option value="motivation">Morning motivation</option>
+        </select>
+      </div>
+
+      <div class="section">
+        <div class="record-area">
+          <button class="record-btn" id="recordBtn">
+            <svg viewBox="0 0 24 24" id="micIcon">
+              <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+              <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+            </svg>
+            <svg viewBox="0 0 24 24" id="stopIcon" style="display:none;">
+              <rect x="6" y="6" width="12" height="12"/>
+            </svg>
+          </button>
+          <div class="record-status" id="recordStatus">Tap to start recording</div>
+          <div class="record-time" id="recordTime">0:00</div>
+        </div>
+
+        <input type="text" class="label-input" id="labelInput" placeholder="Label this recording (optional)">
+
+        <button class="save-btn" id="saveBtn" disabled>Save Recording</button>
+
+        <div class="script-box" id="scriptBox">
+          <h4>Script to read (customize it):</h4>
+          <div class="script-text" id="scriptText">
+            <!-- Filled by JS based on category -->
+          </div>
+          <button class="script-toggle" id="scriptToggle">Hide script</button>
+        </div>
+
+        <div class="tip-box">
+          <h4>Tips:</h4>
+          <p>
+            Read the script above, but make it yours. Add specific details - names, memories, reasons.
+            The more personal, the more powerful it'll be when you need it.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <a href="#" class="back-link" id="backLink">← Back</a>
+  </div>
+
+  <script src="voice-message.js"></script>
+</body>
+</html>

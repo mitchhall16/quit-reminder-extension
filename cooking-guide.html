@@ -1,0 +1,1328 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Simple Cooking Guide</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+      color: white;
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 2rem;
+      margin-bottom: 10px;
+      background: linear-gradient(135deg, #fb923c, #f97316);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #64748b;
+      margin-bottom: 30px;
+    }
+
+    .tip-box {
+      background: rgba(251, 146, 60, 0.1);
+      border: 1px solid rgba(251, 146, 60, 0.3);
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 30px;
+    }
+
+    .tip-box h3 {
+      color: #fb923c;
+      font-size: 0.9rem;
+      margin-bottom: 8px;
+    }
+
+    .tip-box p {
+      color: #94a3b8;
+      font-size: 0.85rem;
+      line-height: 1.5;
+    }
+
+    .recipe-tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .recipe-tab {
+      padding: 10px 20px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      color: #94a3b8;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+
+    .recipe-tab:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .recipe-tab.active {
+      background: rgba(251, 146, 60, 0.2);
+      border-color: #fb923c;
+      color: #fb923c;
+    }
+
+    .recipe-card {
+      background: rgba(255,255,255,0.03);
+      border-radius: 16px;
+      padding: 25px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .recipe-card.active {
+      display: block;
+    }
+
+    .recipe-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    .recipe-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+
+    .recipe-meta {
+      display: flex;
+      gap: 15px;
+    }
+
+    .meta-item {
+      text-align: center;
+      padding: 8px 15px;
+      background: rgba(0,0,0,0.2);
+      border-radius: 8px;
+    }
+
+    .meta-value {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #22d3ee;
+    }
+
+    .meta-label {
+      font-size: 0.65rem;
+      color: #64748b;
+      text-transform: uppercase;
+    }
+
+    .section-title {
+      font-size: 0.8rem;
+      color: #fb923c;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin: 20px 0 10px 0;
+    }
+
+    .ingredients-list {
+      list-style: none;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 8px;
+    }
+
+    .ingredients-list li {
+      padding: 8px 12px;
+      background: rgba(0,0,0,0.2);
+      border-radius: 6px;
+      font-size: 0.9rem;
+      color: #cbd5e1;
+    }
+
+    .ingredients-list li::before {
+      content: '• ';
+      color: #fb923c;
+    }
+
+    .steps-list {
+      list-style: none;
+      counter-reset: steps;
+    }
+
+    .steps-list li {
+      counter-increment: steps;
+      padding: 15px;
+      padding-left: 50px;
+      background: rgba(0,0,0,0.15);
+      border-radius: 8px;
+      margin-bottom: 10px;
+      position: relative;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      color: #e2e8f0;
+    }
+
+    .steps-list li::before {
+      content: counter(steps);
+      position: absolute;
+      left: 15px;
+      top: 15px;
+      width: 24px;
+      height: 24px;
+      background: #fb923c;
+      color: #000;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.8rem;
+    }
+
+    .pro-tip {
+      margin-top: 8px;
+      padding: 10px;
+      background: rgba(34, 211, 238, 0.1);
+      border-left: 3px solid #22d3ee;
+      border-radius: 0 6px 6px 0;
+      font-size: 0.85rem;
+      color: #22d3ee;
+    }
+
+    .nutrition-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .nutrition-item {
+      text-align: center;
+      padding: 12px;
+      background: rgba(0,0,0,0.2);
+      border-radius: 8px;
+    }
+
+    .nutrition-value {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #4ade80;
+    }
+
+    .nutrition-label {
+      font-size: 0.7rem;
+      color: #64748b;
+      text-transform: uppercase;
+    }
+
+    .temp-chart {
+      margin-top: 30px;
+      padding: 20px;
+      background: rgba(255,255,255,0.03);
+      border-radius: 12px;
+    }
+
+    .temp-chart h3 {
+      font-size: 1rem;
+      margin-bottom: 15px;
+      color: #fb923c;
+    }
+
+    .temp-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .temp-table th, .temp-table td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .temp-table th {
+      color: #64748b;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+    }
+
+    .temp-table td {
+      color: #e2e8f0;
+      font-size: 0.9rem;
+    }
+
+    .temp-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .final-look {
+      background: rgba(34, 211, 238, 0.1);
+      border: 1px solid rgba(34, 211, 238, 0.3);
+      border-radius: 8px;
+      padding: 12px 15px;
+      margin-bottom: 15px;
+      font-size: 0.9rem;
+      color: #94a3b8;
+    }
+
+    .final-look strong {
+      color: #22d3ee;
+    }
+
+    .recipe-image {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      border-radius: 12px;
+      margin-bottom: 20px;
+    }
+
+    .no-mealprep-note {
+      background: rgba(74, 222, 128, 0.1);
+      border: 1px solid rgba(74, 222, 128, 0.3);
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 20px;
+    }
+
+    .no-mealprep-note h3 {
+      color: #4ade80;
+      font-size: 0.9rem;
+      margin-bottom: 8px;
+    }
+
+    .no-mealprep-note p {
+      color: #94a3b8;
+      font-size: 0.85rem;
+      line-height: 1.5;
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-top: 30px;
+      color: #64748b;
+      text-decoration: none;
+      font-size: 0.9rem;
+    }
+
+    .back-link:hover {
+      color: #fb923c;
+    }
+
+    /* Saved recipes styles */
+    .saved-recipe-item {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 15px;
+      position: relative;
+    }
+
+    .saved-recipe-item:hover {
+      border-color: rgba(251, 146, 60, 0.3);
+    }
+
+    .saved-recipe-title {
+      font-size: 1.1rem;
+      color: #fb923c;
+      margin-bottom: 15px;
+      padding-right: 40px;
+    }
+
+    .saved-recipe-section {
+      margin-bottom: 12px;
+    }
+
+    .saved-recipe-section h4 {
+      font-size: 0.8rem;
+      color: #64748b;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .saved-recipe-section ul,
+    .saved-recipe-section ol {
+      margin-left: 20px;
+      color: #e2e8f0;
+      font-size: 0.9rem;
+    }
+
+    .saved-recipe-section li {
+      margin-bottom: 4px;
+    }
+
+    .saved-recipe-macros {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    .saved-macro {
+      background: rgba(255,255,255,0.1);
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+    }
+
+    .saved-macro-label {
+      color: #64748b;
+    }
+
+    .saved-macro-value {
+      color: #4ade80;
+      font-weight: 600;
+    }
+
+    .delete-saved-btn {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: rgba(239, 68, 68, 0.2);
+      border: none;
+      color: #ef4444;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .delete-saved-btn:hover {
+      background: rgba(239, 68, 68, 0.4);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Simple Cooking Guide</h1>
+    <p class="subtitle">Easy, healthy meals. No experience needed.</p>
+
+    <div style="text-align: center; margin-bottom: 20px;">
+      <button id="openAiChatBtn" style="padding: 12px 24px; background: linear-gradient(135deg, #fb923c, #f97316); border: none; border-radius: 10px; color: white; font-weight: 600; cursor: pointer; font-size: 1rem;">
+        Ask AI for Recipe Ideas
+      </button>
+    </div>
+
+    <div class="tip-box">
+      <h3>Before You Start</h3>
+      <p>You need: a pan or baking sheet, cooking oil or butter, salt, pepper. That's it. Everything else is optional. Start simple, get good at the basics, then add more.</p>
+    </div>
+
+    <div class="no-mealprep-note">
+      <h3>Fresh > Meal Prep</h3>
+      <p>All these recipes are meant to be made fresh and eaten right away. 10-20 minutes max. No sad fridge leftovers. Cook what you need, eat it hot.</p>
+    </div>
+
+    <div class="recipe-tabs">
+      <button class="recipe-tab active" data-recipe="chicken">Chicken Breast</button>
+      <button class="recipe-tab" data-recipe="pork">Pork Chop</button>
+      <button class="recipe-tab" data-recipe="ground-beef">Ground Beef</button>
+      <button class="recipe-tab" data-recipe="eggs">Eggs</button>
+      <button class="recipe-tab" data-recipe="rice-bowl">Easy Rice Bowl</button>
+      <button class="recipe-tab" data-recipe="ginger-tea">Ginger Honey Tea</button>
+      <button class="recipe-tab" data-recipe="veggie-scramble">Veggie Egg Scramble</button>
+      <button class="recipe-tab" data-recipe="breakfast-burrito">Breakfast Burrito</button>
+      <button class="recipe-tab" data-recipe="oatmeal">Oatmeal</button>
+      <button class="recipe-tab" data-recipe="veggie-rice">Veggie Garlic Rice</button>
+      <button class="recipe-tab" data-recipe="quesadilla">Quick Quesadilla</button>
+      <button class="recipe-tab" data-recipe="my-saved" style="background: rgba(74, 222, 128, 0.2); border-color: rgba(74, 222, 128, 0.4); color: #4ade80;">My Saved Recipes</button>
+    </div>
+
+    <!-- CHICKEN BREAST -->
+    <div class="recipe-card active" id="chicken">
+      <div class="recipe-header">
+        <div class="recipe-title">Perfect Chicken Breast</div>
+        <div class="recipe-meta">
+          <div class="meta-item">
+            <div class="meta-value">25</div>
+            <div class="meta-label">Minutes</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-value">400°F</div>
+            <div class="meta-label">Oven</div>
+          </div>
+        </div>
+      </div>
+
+      <img src="https://images.unsplash.com/photo-1604503468506-a8da13d82791?w=800&q=80" alt="Baked chicken breast" class="recipe-image">
+
+      <div class="section-title">What You Need</div>
+      <ul class="ingredients-list">
+        <li>1 chicken breast</li>
+        <li>1 tbsp olive oil (or any oil)</li>
+        <li>Salt</li>
+        <li>Pepper</li>
+        <li>Garlic powder (optional)</li>
+      </ul>
+
+      <div class="section-title">Steps</div>
+      <ol class="steps-list">
+        <li>
+          Turn on your oven to 400°F. Let it heat up while you prep.
+          <div class="pro-tip">If your oven beeps when ready, wait for that. If not, give it 10-15 mins.</div>
+        </li>
+        <li>
+          Take the chicken out of the package. Pat it dry with paper towels. Wet chicken = no crispy outside.
+        </li>
+        <li>
+          Put chicken on a baking sheet or oven-safe pan. Drizzle oil on both sides. Sprinkle salt, pepper, and garlic powder on both sides.
+        </li>
+        <li>
+          Put it in the oven. Set a timer for 20-25 minutes.
+          <div class="pro-tip">Thicker breast = 25 min. Thinner = 20 min. When in doubt, cut the thickest part - no pink inside means it's done.</div>
+        </li>
+        <li>
+          Take it out. Let it sit for 5 minutes before cutting. This keeps it juicy.
+        </li>
+      </ol>
+
+      <div class="section-title">Nutrition (per breast)</div>
+      <div class="nutrition-grid">
+        <div class="nutrition-item">
+          <div class="nutrition-value">280</div>
+          <div class="nutrition-label">Calories</div>
+        </div>
+        <div class="nutrition-item">
+          <div class="nutrition-value">53g</div>
+          <div class="nutrition-label">Protein</div>
+        </div>
+        <div class="nutrition-item">
+          <div class="nutrition-value">6g</div>
+          <div class="nutrition-label">Fat</div>
+        </div>
+        <div class="nutrition-item">
+          <div class="nutrition-value">0g</div>
+          <div class="nutrition-label">Carbs</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PORK CHOP -->
+    <div class="recipe-card" id="pork">
+      <div class="recipe-header">
+        <div class="recipe-title">Simple Pork Chop</div>
+        <div class="recipe-meta">
+          <div class="meta-item">
+            <div class="meta-value">15</div>
+            <div class="meta-label">Minutes</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-value">Med-High</div>
+            <div class="meta-label">Stovetop</div>
+          </div>
+        </div>
+      </div>
+
+      <img src="https://images.unsplash.com/photo-1432139555190-58524dae6a55?w=800&q=80" alt="Pan seared pork chop" class="recipe-image">
+
+      <div class="section-title">What You Need</div>
+      <ul class="ingredients-list">
+        <li>1-2 pork chops (bone-in or boneless)</li>
+        <li>1 tbsp butter or oil</li>
+        <li>Salt</li>
+        <li>Pepper</li>
+        <li>Garlic powder (optional)</li>
+      </ul>
+
+      <div class="section-title">Steps</div>
+      <ol class="steps-list">
+        <li>
+          Take pork chops out of the fridge 15-20 min before cooking. Room temp meat cooks more evenly.
+        </li>
+        <li>
+          Pat them dry with paper towels. Season both sides with salt, pepper, and garlic powder.
+        </li>
+        <li>
+          Put a pan on the stove. Turn to medium-high heat. Add butter or oil. Wait until it's hot (butter will bubble, oil will shimmer).
+        </li>
+        <li>
+          Place pork chops in pan. DON'T TOUCH THEM for 4-5 minutes. Let them get a brown crust.
+          <div class="pro-tip">If they stick when you try to flip, they're not ready. Wait another minute.</div>
+        </li>
+        <li>
+          Flip them. Cook another 4-5 minutes on the other side.
+        </li>
+        <li>
+          Check if done: cut into the thickest part. Slightly pink in center is OK (145°F). No red.
+        </li>
+        <li>
+          Let rest 3-5 minutes before eating.
+        </li>
+      </ol>
+
+      <div class="section-title">Nutrition (per chop)</div>
+      <div class="nutrition-grid">
+        <div class="nutrition-item">
+          <div class="nutrition-value">250</div>
+          <div class="nutrition-label">Calories</div>
+        </div>
+        <div class="nutrition-item">
+          <div class="nutrition-value">30g</div>
+          <div class="nutrition-label">Protein</div>
+        </div>
+        <div class="nutrition-item">
+          <div class="nutrition-value">14g</div>
+          <div class="nutrition-label">Fat</div>
+        </div>
+        <div class="nutrition-item">
+          <div class="nutrition-value">0g</div>
+          <div class="nutrition-label">Carbs</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- GROUND BEEF -->
+    <div class="recipe-card" id="ground-beef">
+      <div class="recipe-header">
+        <div class="recipe-title">Ground Beef (for anything)</div>
+        <div class="recipe-meta">
+          <div class="meta-item">
+            <div class="meta-value">12</div>
+            <div class="meta-label">Minutes</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-value">Med-High</div>
+            <div class="meta-label">Stovetop</div>
+          </div>
+        </div>
+      </div>
+
+      <img src="https://images.unsplash.com/photo-1529042410759-befb1204b468?w=800&q=80" alt="Cooked ground beef" class="recipe-image">
+
+      <div class="section-title">What You Need</div>
+      <ul class="ingredients-list">
+        <li>1 lb ground beef (80/20 or 90/10)</li>
+        <li>Salt</li>
+        <li>Pepper</li>
+        <li>Garlic powder</li>
+        <li>Onion powder (optional)</li>
+      </ul>
+
+      <div class="section-title">Steps</div>
+      <ol class="steps-list">
+        <li>
+          Put a large pan on medium-high heat. No oil needed - beef has enough fat.
+        </li>
+        <li>
+          Add ground beef to the hot pan. Break it up with a spatula or wooden spoon.
+        </li>
+        <li>
+          Keep breaking it into smaller pieces as it cooks. Stir every minute or so.
+          <div class="pro-tip">Smaller pieces = more browning = more flavor.</div>
+        </li>
+        <li>
+          Cook until no pink remains, about 8-10 minutes.
+        </li>
+        <li>
+          Drain the fat if there's a lot (tilt pan, spoon it out). Season with salt, pepper, garlic powder.
+        </li>
+        <li>
+          Use for: tacos, rice bowls, pasta, or just eat it with vegetables.
+        </li>
+      </ol>
+
+      <div class="section-title">Nutrition (per 4oz serving)</div>
+      <div class="nutrition-grid">
+        <div class="nutrition-item">
+          <div class="nutrition-value">290</div>
+          <div class="nutrition-label">Calories</div>
+        </div>
+        <div class="nutrition-item">
+          <div class="nutrition-value">26g</div>
+          <div class="nutrition-label">Protein</div>
+        </div>
+        <div class="nutrition-item">
+          <div class="nutrition-value">20g</div>
+          <div class="nutrition-label">Fat</div>
+        </div>
+        <div class="nutrition-item">
+          <div class="nutrition-value">0g</div>
+          <div class="nutrition-label">Carbs</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- EGGS -->
+    <div class="recipe-card" id="eggs">
+      <div class="recipe-header">
+        <div class="recipe-title">Eggs (3 Ways)</div>
+        <div class="recipe-meta">
+          <div class="meta-item">
+            <div class="meta-value">5-10</div>
+            <div class="meta-label">Minutes</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-value">Med</div>
+            <div class="meta-label">Stovetop</div>
+          </div>
+        </div>
+      </div>
+
+      <img src="https://images.unsplash.com/photo-1525351484163-7529414344d8?w=800&q=80" alt="Fried eggs" class="recipe-image">
+
+      <div class="section-title">Scrambled Eggs</div>
+      <ol class="steps-list">
+        <li>Crack 2-3 eggs into a bowl. Add a splash of milk (optional). Beat with a fork until mixed.</li>
+        <li>Put a non-stick pan on medium heat. Add a little butter.</li>
+        <li>Pour eggs in. Wait 30 seconds, then gently push eggs from edges to center with a spatula.</li>
+        <li>Keep gently pushing until eggs are just set but still slightly wet. Take off heat - they'll finish cooking from the heat of the pan.</li>
+        <li>Season with salt and pepper.</li>
+      </ol>
+
+      <div class="section-title">Fried Eggs</div>
+      <ol class="steps-list">
+        <li>Put a non-stick pan on medium heat. Add butter or oil.</li>
+        <li>Crack egg directly into pan. Don't break the yolk.</li>
+        <li>Cook until whites are set but yolk is still runny (about 3-4 min). For over-easy: flip and cook 30 more seconds.</li>
+        <li>Season with salt and pepper.</li>
+      </ol>
+
+      <div class="section-title">Hard Boiled</div>
+      <ol class="steps-list">
+        <li>Put eggs in a pot. Cover with cold water by 1 inch.</li>
+        <li>Bring to a boil. Once boiling, turn off heat and cover pot.</li>
+        <li>Let sit 10-12 minutes.</li>
+        <li>Put eggs in cold water or ice bath for 5 minutes. Then peel.</li>
+      </ol>
+
+      <div class="section-title">Nutrition (per 2 eggs)</div>
+      <div class="nutrition-grid">
+        <div class="nutrition-item">
+          <div class="nutrition-value">140</div>
+          <div class="nutrition-label">Calories</div>
+        </div>
+        <div class="nutrition-item">
+          <div class="nutrition-value">12g</div>
+          <div class="nutrition-label">Protein</div>
+        </div>
+        <div class="nutrition-item">
+          <div class="nutrition-value">10g</div>
+          <div class="nutrition-label">Fat</div>
+        </div>
+        <div class="nutrition-item">
+          <div class="nutrition-value">1g</div>
+          <div class="nutrition-label">Carbs</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- EASY RICE BOWL -->
+    <div class="recipe-card" id="rice-bowl">
+      <div class="recipe-header">
+        <div class="recipe-title">Easy Rice Bowl</div>
+        <div class="recipe-meta">
+          <div class="meta-item">
+            <div class="meta-value">20</div>
+            <div class="meta-label">Minutes</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-value">One Pan</div>
+            <div class="meta-label">Full Meal</div>
+          </div>
+        </div>
+      </div>
+
+      <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&q=80" alt="Rice bowl with vegetables" class="recipe-image">
+
+      <div class="section-title">What You Need</div>
+      <ul class="ingredients-list">
+        <li>1 cup rice (any kind)</li>
+        <li>1 lb ground beef or chicken</li>
+        <li>1 bag frozen vegetables</li>
+        <li>Soy sauce</li>
+        <li>Salt, pepper, garlic powder</li>
+      </ul>
+
+      <div class="section-title">Steps</div>
+      <ol class="steps-list">
+        <li>
+          Cook rice according to package. Usually: 1 cup rice + 2 cups water, bring to boil, then simmer covered for 15-20 min.
+          <div class="pro-tip">Or just buy microwave rice packets. No shame in that.</div>
+        </li>
+        <li>
+          While rice cooks, brown your meat in a pan (see ground beef recipe above).
+        </li>
+        <li>
+          When meat is almost done, add frozen vegetables directly to the pan. Cook until heated through (5 min).
+        </li>
+        <li>
+          Add 2-3 tbsp soy sauce to the pan. Stir everything together.
+        </li>
+        <li>
+          Put rice in a bowl. Top with meat and veggie mixture.
+        </li>
+      </ol>
+
+      <div class="section-title">Nutrition (per bowl)</div>
+      <div class="nutrition-grid">
+        <div class="nutrition-item">
+          <div class="nutrition-value">550</div>
+          <div class="nutrition-label">Calories</div>
+        </div>
+        <div class="nutrition-item">
+          <div class="nutrition-value">35g</div>
+          <div class="nutrition-label">Protein</div>
+        </div>
+        <div class="nutrition-item">
+          <div class="nutrition-value">18g</div>
+          <div class="nutrition-label">Fat</div>
+        </div>
+        <div class="nutrition-item">
+          <div class="nutrition-value">55g</div>
+          <div class="nutrition-label">Carbs</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- GINGER HONEY TEA -->
+    <div class="recipe-card" id="ginger-tea">
+      <div class="recipe-header">
+        <div class="recipe-title">Ginger Honey Tea</div>
+        <div class="recipe-meta">
+          <div class="meta-item">
+            <div class="meta-value">10</div>
+            <div class="meta-label">Minutes</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-value">Healing</div>
+            <div class="meta-label">Good For</div>
+          </div>
+        </div>
+      </div>
+
+      <img src="https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=800&q=80" alt="Ginger tea with honey" class="recipe-image">
+
+      <div class="final-look">
+        <strong>What it looks like:</strong> Light golden/yellow liquid, slightly cloudy. Ginger pieces floating or strained out. Steam rising.
+      </div>
+
+      <div class="section-title">What You Need</div>
+      <ul class="ingredients-list">
+        <li>1-2 inch piece of fresh ginger</li>
+        <li>1-2 tbsp honey</li>
+        <li>2 cups water</li>
+        <li>Lemon (optional)</li>
+      </ul>
+
+      <div class="section-title">Steps</div>
+      <ol class="steps-list">
+        <li>
+          Cut ginger into thin slices or small chunks. No need to peel - just wash it.
+          <div class="pro-tip">More ginger = stronger/spicier. Start with less if you're new to it.</div>
+        </li>
+        <li>
+          Boil 2 cups of water in a pot or kettle.
+        </li>
+        <li>
+          Add ginger slices to the boiling water. Reduce heat to low. Let it simmer for 5-10 minutes.
+          <div class="pro-tip">Longer = stronger flavor. 5 min for mild, 10 min for intense.</div>
+        </li>
+        <li>
+          Pour into a mug through a strainer (or just leave the ginger in).
+        </li>
+        <li>
+          Add honey and stir. Add a squeeze of lemon if you have it.
+        </li>
+      </ol>
+
+      <div class="section-title">Benefits</div>
+      <ul class="ingredients-list">
+        <li>Helps digestion</li>
+        <li>Reduces inflammation</li>
+        <li>Soothes sore throat</li>
+        <li>Good for nausea</li>
+        <li>Calming before bed</li>
+      </ul>
+    </div>
+
+    <!-- VEGGIE EGG SCRAMBLE -->
+    <div class="recipe-card" id="veggie-scramble">
+      <div class="recipe-header">
+        <div class="recipe-title">Veggie Egg Scramble</div>
+        <div class="recipe-meta">
+          <div class="meta-item">
+            <div class="meta-value">10</div>
+            <div class="meta-label">Minutes</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-value">High Protein</div>
+            <div class="meta-label">Good For</div>
+          </div>
+        </div>
+      </div>
+
+      <img src="https://images.unsplash.com/photo-1482049016gy-2c3f1c6a8b1d?w=800&q=80" alt="Scrambled eggs with vegetables" class="recipe-image" onerror="this.src='https://images.unsplash.com/photo-1606923829579-0cb981a83e2e?w=800&q=80'">
+
+      <div class="final-look">
+        <strong>What it looks like:</strong> Fluffy yellow eggs mixed with green spinach, red tomatoes, bits of white/purple onion. Colorful and chunky.
+      </div>
+
+      <div class="section-title">What You Need</div>
+      <ul class="ingredients-list">
+        <li>3 eggs</li>
+        <li>Handful of spinach</li>
+        <li>1/4 red onion, diced</li>
+        <li>1 small tomato, diced</li>
+        <li>1 clove garlic, minced</li>
+        <li>Butter or oil</li>
+        <li>Salt & pepper</li>
+      </ul>
+
+      <div class="section-title">Steps</div>
+      <ol class="steps-list">
+        <li>
+          Dice the onion and tomato into small pieces. Mince the garlic (chop it super fine). Rough chop the spinach if the leaves are big.
+        </li>
+        <li>
+          Heat a pan on medium heat. Add butter or oil.
+        </li>
+        <li>
+          Add onion first. Cook 2 minutes until it starts to soften.
+        </li>
+        <li>
+          Add garlic. Stir for 30 seconds. Don't let it burn (it goes from perfect to burnt fast).
+        </li>
+        <li>
+          Add tomatoes. Cook 1 minute.
+        </li>
+        <li>
+          Add spinach. It will wilt down fast - just stir until it shrinks (30 seconds).
+        </li>
+        <li>
+          Crack eggs directly into the pan. Stir everything together, breaking up the eggs as they cook.
+        </li>
+        <li>
+          When eggs are just set (still slightly wet), take off heat. Season with salt and pepper.
+          <div class="pro-tip">They keep cooking from residual heat, so take them off early.</div>
+        </li>
+      </ol>
+
+      <div class="section-title">Nutrition</div>
+      <div class="nutrition-grid">
+        <div class="nutrition-item">
+          <div class="nutrition-value">280</div>
+          <div class="nutrition-label">Calories</div>
+        </div>
+        <div class="nutrition-item">
+          <div class="nutrition-value">20g</div>
+          <div class="nutrition-label">Protein</div>
+        </div>
+        <div class="nutrition-item">
+          <div class="nutrition-value">18g</div>
+          <div class="nutrition-label">Fat</div>
+        </div>
+        <div class="nutrition-item">
+          <div class="nutrition-value">8g</div>
+          <div class="nutrition-label">Carbs</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BREAKFAST BURRITO -->
+    <div class="recipe-card" id="breakfast-burrito">
+      <div class="recipe-header">
+        <div class="recipe-title">Breakfast Burrito</div>
+        <div class="recipe-meta">
+          <div class="meta-item">
+            <div class="meta-value">12</div>
+            <div class="meta-label">Minutes</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-value">Filling</div>
+            <div class="meta-label">Good For</div>
+          </div>
+        </div>
+      </div>
+
+      <img src="https://images.unsplash.com/photo-1626700051175-6818013e1d4f?w=800&q=80" alt="Breakfast burrito" class="recipe-image">
+
+      <div class="final-look">
+        <strong>What it looks like:</strong> Rolled up tortilla, golden brown spots from the pan. Cut in half shows eggs, veggies, maybe cheese inside. Compact and portable.
+      </div>
+
+      <div class="section-title">What You Need</div>
+      <ul class="ingredients-list">
+        <li>2-3 eggs</li>
+        <li>1 large tortilla</li>
+        <li>Handful of spinach</li>
+        <li>1/4 red onion, diced</li>
+        <li>1 small tomato, diced</li>
+        <li>Cheese (optional)</li>
+        <li>Salt & pepper</li>
+      </ul>
+
+      <div class="section-title">Steps</div>
+      <ol class="steps-list">
+        <li>
+          Make the veggie scramble from the previous recipe (or just scrambled eggs if you want simple).
+        </li>
+        <li>
+          Warm the tortilla. Either: microwave 15 seconds, or put it directly on the stove burner for a few seconds each side.
+          <div class="pro-tip">Warm tortilla = doesn't crack when you roll it.</div>
+        </li>
+        <li>
+          Put the eggs in a line across the middle of the tortilla. Add cheese if using.
+        </li>
+        <li>
+          Fold the sides in first (left and right). Then roll from bottom to top, keeping it tight.
+        </li>
+        <li>
+          (Optional) Put the burrito seam-side down in a dry pan on medium heat for 1-2 minutes to seal and get it crispy.
+        </li>
+      </ol>
+
+      <div class="section-title">Nutrition</div>
+      <div class="nutrition-grid">
+        <div class="nutrition-item">
+          <div class="nutrition-value">380</div>
+          <div class="nutrition-label">Calories</div>
+        </div>
+        <div class="nutrition-item">
+          <div class="nutrition-value">22g</div>
+          <div class="nutrition-label">Protein</div>
+        </div>
+        <div class="nutrition-item">
+          <div class="nutrition-value">18g</div>
+          <div class="nutrition-label">Fat</div>
+        </div>
+        <div class="nutrition-item">
+          <div class="nutrition-value">32g</div>
+          <div class="nutrition-label">Carbs</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- OATMEAL -->
+    <div class="recipe-card" id="oatmeal">
+      <div class="recipe-header">
+        <div class="recipe-title">Oatmeal (4 Ways)</div>
+        <div class="recipe-meta">
+          <div class="meta-item">
+            <div class="meta-value">5-10</div>
+            <div class="meta-label">Minutes</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-value">Energy</div>
+            <div class="meta-label">Good For</div>
+          </div>
+        </div>
+      </div>
+
+      <img src="https://images.unsplash.com/photo-1517673400267-0251440c45dc?w=800&q=80" alt="Oatmeal with toppings" class="recipe-image">
+
+      <div class="final-look">
+        <strong>What it looks like:</strong> Creamy, thick porridge. Topped with whatever you add. Should be thick enough that a spoon stands up in it, but not dry.
+      </div>
+
+      <div class="section-title">Basic Oatmeal</div>
+      <ol class="steps-list">
+        <li>
+          Put 1 cup oats + 2 cups water (or milk) in a pot.
+        </li>
+        <li>
+          Bring to a boil, then reduce to low heat.
+        </li>
+        <li>
+          Stir occasionally. Cook 5 minutes for regular oats, 10-15 for steel cut.
+          <div class="pro-tip">Add a pinch of salt while cooking - makes it taste way better.</div>
+        </li>
+        <li>
+          When thick and creamy, take off heat. Add toppings.
+        </li>
+      </ol>
+
+      <div class="section-title">Topping Ideas (Use What You Have)</div>
+      <ul class="ingredients-list">
+        <li><strong>Honey + Ginger:</strong> Drizzle honey, add minced fresh ginger</li>
+        <li><strong>Savory:</strong> Fried egg on top, salt, pepper</li>
+        <li><strong>Banana + Honey:</strong> Slice banana, drizzle honey</li>
+        <li><strong>Cinnamon + Honey:</strong> Sprinkle cinnamon, drizzle honey</li>
+      </ul>
+
+      <div class="section-title">Overnight Oats (No Cooking)</div>
+      <ol class="steps-list">
+        <li>
+          Put 1/2 cup oats + 1/2 cup milk in a jar or container.
+        </li>
+        <li>
+          Add 1 tbsp honey. Stir.
+        </li>
+        <li>
+          Put in fridge overnight (or at least 4 hours).
+        </li>
+        <li>
+          Eat cold in the morning. Add toppings.
+        </li>
+      </ol>
+
+      <div class="section-title">Nutrition (1 cup oatmeal)</div>
+      <div class="nutrition-grid">
+        <div class="nutrition-item">
+          <div class="nutrition-value">300</div>
+          <div class="nutrition-label">Calories</div>
+        </div>
+        <div class="nutrition-item">
+          <div class="nutrition-value">10g</div>
+          <div class="nutrition-label">Protein</div>
+        </div>
+        <div class="nutrition-item">
+          <div class="nutrition-value">5g</div>
+          <div class="nutrition-label">Fat</div>
+        </div>
+        <div class="nutrition-item">
+          <div class="nutrition-value">54g</div>
+          <div class="nutrition-label">Carbs</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VEGGIE GARLIC RICE -->
+    <div class="recipe-card" id="veggie-rice">
+      <div class="recipe-header">
+        <div class="recipe-title">Veggie Garlic Rice</div>
+        <div class="recipe-meta">
+          <div class="meta-item">
+            <div class="meta-value">20</div>
+            <div class="meta-label">Minutes</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-value">Full Meal</div>
+            <div class="meta-label">Good For</div>
+          </div>
+        </div>
+      </div>
+
+      <img src="https://images.unsplash.com/photo-1512058564366-18510be2db19?w=800&q=80" alt="Vegetable fried rice" class="recipe-image">
+
+      <div class="final-look">
+        <strong>What it looks like:</strong> White/slightly golden rice mixed with green spinach, red tomatoes, bits of onion. Colorful. Can see garlic pieces. Steam rising.
+      </div>
+
+      <div class="section-title">What You Need</div>
+      <ul class="ingredients-list">
+        <li>1 cup rice</li>
+        <li>2 cloves garlic, minced</li>
+        <li>1/4 red onion, diced</li>
+        <li>Handful of spinach</li>
+        <li>1 tomato, diced</li>
+        <li>2 tbsp butter or oil</li>
+        <li>Salt & pepper</li>
+        <li>Radish, sliced (for topping)</li>
+      </ul>
+
+      <div class="section-title">Steps</div>
+      <ol class="steps-list">
+        <li>
+          Cook rice according to package (1 cup rice + 2 cups water, boil, then simmer 15-20 min covered).
+        </li>
+        <li>
+          While rice cooks: heat butter/oil in a large pan on medium heat.
+        </li>
+        <li>
+          Add onion. Cook 2 minutes.
+        </li>
+        <li>
+          Add garlic. Cook 30 seconds (don't burn it).
+        </li>
+        <li>
+          Add tomatoes. Cook 2 minutes until they soften.
+        </li>
+        <li>
+          Add cooked rice to the pan. Stir everything together.
+        </li>
+        <li>
+          Add spinach. Stir until wilted.
+        </li>
+        <li>
+          Season with salt and pepper. Top with sliced radish for crunch.
+          <div class="pro-tip">Add a fried egg on top for extra protein.</div>
+        </li>
+      </ol>
+
+      <div class="section-title">Nutrition</div>
+      <div class="nutrition-grid">
+        <div class="nutrition-item">
+          <div class="nutrition-value">320</div>
+          <div class="nutrition-label">Calories</div>
+        </div>
+        <div class="nutrition-item">
+          <div class="nutrition-value">7g</div>
+          <div class="nutrition-label">Protein</div>
+        </div>
+        <div class="nutrition-item">
+          <div class="nutrition-value">10g</div>
+          <div class="nutrition-label">Fat</div>
+        </div>
+        <div class="nutrition-item">
+          <div class="nutrition-value">52g</div>
+          <div class="nutrition-label">Carbs</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- QUICK QUESADILLA -->
+    <div class="recipe-card" id="quesadilla">
+      <div class="recipe-header">
+        <div class="recipe-title">Quick Quesadilla</div>
+        <div class="recipe-meta">
+          <div class="meta-item">
+            <div class="meta-value">8</div>
+            <div class="meta-label">Minutes</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-value">Fast</div>
+            <div class="meta-label">Good For</div>
+          </div>
+        </div>
+      </div>
+
+      <img src="https://images.unsplash.com/photo-1618040996337-56904b7850b9?w=800&q=80" alt="Quesadilla cut into triangles" class="recipe-image">
+
+      <div class="final-look">
+        <strong>What it looks like:</strong> Golden brown tortilla, crispy on outside. Cut into triangles. Cheese stretching when you pull pieces apart. Veggies visible inside.
+      </div>
+
+      <div class="section-title">What You Need</div>
+      <ul class="ingredients-list">
+        <li>2 tortillas (or fold 1 in half)</li>
+        <li>Cheese (any kind that melts)</li>
+        <li>Spinach</li>
+        <li>1/4 red onion, sliced thin</li>
+        <li>Tomato, sliced thin</li>
+        <li>Butter or oil</li>
+      </ul>
+
+      <div class="section-title">Steps</div>
+      <ol class="steps-list">
+        <li>
+          Heat a pan on medium heat. Add a little butter or oil.
+        </li>
+        <li>
+          Put one tortilla in the pan.
+        </li>
+        <li>
+          Add cheese on top of the tortilla (cover the whole thing).
+        </li>
+        <li>
+          Add spinach, onion, tomato on one half.
+          <div class="pro-tip">Don't overload it or it won't close properly.</div>
+        </li>
+        <li>
+          When cheese starts melting and bottom tortilla is golden (2-3 min), fold in half. Or put second tortilla on top.
+        </li>
+        <li>
+          Flip and cook other side until golden (2-3 min).
+        </li>
+        <li>
+          Slide onto cutting board. Let sit 1 minute (cheese is lava hot). Cut into triangles.
+        </li>
+      </ol>
+
+      <div class="section-title">Nutrition</div>
+      <div class="nutrition-grid">
+        <div class="nutrition-item">
+          <div class="nutrition-value">350</div>
+          <div class="nutrition-label">Calories</div>
+        </div>
+        <div class="nutrition-item">
+          <div class="nutrition-value">14g</div>
+          <div class="nutrition-label">Protein</div>
+        </div>
+        <div class="nutrition-item">
+          <div class="nutrition-value">18g</div>
+          <div class="nutrition-label">Fat</div>
+        </div>
+        <div class="nutrition-item">
+          <div class="nutrition-value">32g</div>
+          <div class="nutrition-label">Carbs</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MY SAVED RECIPES -->
+    <div class="recipe-card" id="my-saved">
+      <div class="recipe-header">
+        <div class="recipe-title">My Saved Recipes</div>
+        <div class="recipe-meta">
+          <div class="meta-item">
+            <div class="meta-value" id="savedCount">0</div>
+            <div class="meta-label">Saved</div>
+          </div>
+        </div>
+      </div>
+
+      <p style="color: #94a3b8; margin-bottom: 20px;">Recipes you've saved from the AI assistant will appear here.</p>
+
+      <div id="savedRecipesContainer">
+        <div id="noSavedRecipes" style="text-align: center; padding: 40px 20px; color: #64748b;">
+          <div style="font-size: 3rem; margin-bottom: 15px;">📖</div>
+          <p>No saved recipes yet</p>
+          <p style="font-size: 0.85rem; margin-top: 10px;">Click "Ask AI for Recipe Ideas" to get started!</p>
+        </div>
+        <div id="savedRecipesList"></div>
+      </div>
+    </div>
+
+    <!-- TEMP CHART -->
+    <div class="temp-chart">
+      <h3>Safe Cooking Temperatures (When In Doubt)</h3>
+      <table class="temp-table">
+        <tr>
+          <th>Meat</th>
+          <th>Internal Temp</th>
+          <th>What It Looks Like</th>
+        </tr>
+        <tr>
+          <td>Chicken</td>
+          <td>165°F</td>
+          <td>No pink anywhere</td>
+        </tr>
+        <tr>
+          <td>Pork</td>
+          <td>145°F</td>
+          <td>Slight pink OK</td>
+        </tr>
+        <tr>
+          <td>Ground Beef</td>
+          <td>160°F</td>
+          <td>No pink</td>
+        </tr>
+        <tr>
+          <td>Steak</td>
+          <td>130-145°F</td>
+          <td>Pink center OK (your preference)</td>
+        </tr>
+        <tr>
+          <td>Eggs</td>
+          <td>160°F</td>
+          <td>Whites set, yolk your call</td>
+        </tr>
+      </table>
+    </div>
+
+    <a href="#" class="back-link" id="backLink">← Back to Extension</a>
+  </div>
+
+  <script src="cooking-guide.js"></script>
+</body>
+</html>

@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Smart Alarm Clock</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(180deg, #0a0a0f 0%, #1a1a2e 100%);
+      color: white;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .clock-container {
+      text-align: center;
+      max-width: 500px;
+      width: 100%;
+    }
+
+    .current-time {
+      font-size: 6rem;
+      font-weight: 200;
+      font-family: 'Helvetica Neue', sans-serif;
+      letter-spacing: -2px;
+      margin-bottom: 10px;
+    }
+
+    .current-date {
+      font-size: 1.2rem;
+      color: #64748b;
+      margin-bottom: 40px;
+    }
+
+    .alarm-setting {
+      background: rgba(255,255,255,0.05);
+      border-radius: 20px;
+      padding: 30px;
+      margin-bottom: 30px;
+    }
+
+    .alarm-label {
+      font-size: 0.85rem;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 15px;
+    }
+
+    .alarm-time-input {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .time-input {
+      width: 80px;
+      padding: 15px;
+      font-size: 2rem;
+      text-align: center;
+      background: rgba(0,0,0,0.3);
+      border: 2px solid rgba(255,255,255,0.2);
+      border-radius: 12px;
+      color: white;
+      font-family: monospace;
+    }
+
+    .time-input:focus {
+      outline: none;
+      border-color: #4ade80;
+    }
+
+    .time-separator {
+      font-size: 2rem;
+      color: #64748b;
+    }
+
+    .am-pm-toggle {
+      display: flex;
+      gap: 5px;
+    }
+
+    .am-pm-btn {
+      padding: 15px 20px;
+      background: rgba(255,255,255,0.1);
+      border: 2px solid rgba(255,255,255,0.2);
+      border-radius: 10px;
+      color: #94a3b8;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    .am-pm-btn.active {
+      background: rgba(74, 222, 128, 0.2);
+      border-color: #4ade80;
+      color: #4ade80;
+    }
+
+    .alarm-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .toggle-label {
+      font-size: 1rem;
+      color: #94a3b8;
+    }
+
+    .toggle {
+      width: 60px;
+      height: 32px;
+      background: #333;
+      border-radius: 16px;
+      position: relative;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .toggle.active {
+      background: #4ade80;
+    }
+
+    .toggle::after {
+      content: '';
+      position: absolute;
+      width: 26px;
+      height: 26px;
+      background: white;
+      border-radius: 50%;
+      top: 3px;
+      left: 3px;
+      transition: left 0.2s;
+    }
+
+    .toggle.active::after {
+      left: 31px;
+    }
+
+    .alarm-status {
+      margin-top: 20px;
+      padding: 15px;
+      background: rgba(74, 222, 128, 0.1);
+      border-radius: 10px;
+      color: #4ade80;
+      display: none;
+    }
+
+    .alarm-status.active {
+      display: block;
+    }
+
+    .wakeup-mode {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .mode-label {
+      font-size: 0.85rem;
+      color: #64748b;
+      margin-bottom: 10px;
+    }
+
+    .mode-options {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .mode-option {
+      flex: 1;
+      min-width: 100px;
+      padding: 10px 15px;
+      background: rgba(255,255,255,0.05);
+      border: 2px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      color: #94a3b8;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .mode-option:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .mode-option.active {
+      background: rgba(74, 222, 128, 0.2);
+      border-color: #4ade80;
+      color: #4ade80;
+    }
+
+    .phone-settings {
+      margin-top: 15px;
+      padding: 20px;
+      background: rgba(34, 211, 238, 0.1);
+      border: 1px solid rgba(34, 211, 238, 0.2);
+      border-radius: 12px;
+    }
+
+    .room-code-display {
+      text-align: center;
+      margin: 15px 0;
+    }
+
+    .room-code {
+      font-size: 3rem;
+      font-family: monospace;
+      font-weight: 700;
+      letter-spacing: 8px;
+      color: #22d3ee;
+      background: rgba(0,0,0,0.3);
+      padding: 15px 30px;
+      border-radius: 12px;
+      display: inline-block;
+    }
+
+    .room-code-label {
+      margin-top: 10px;
+      font-size: 0.85rem;
+      color: #64748b;
+    }
+
+    .phone-status {
+      margin-top: 15px;
+      padding: 12px;
+      background: rgba(0,0,0,0.2);
+      border-radius: 8px;
+      font-size: 0.9rem;
+      color: #64748b;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .phone-status.connected {
+      color: #4ade80;
+      background: rgba(74, 222, 128, 0.1);
+    }
+
+    .phone-icon {
+      font-size: 1.2rem;
+    }
+
+    .phone-link-info {
+      margin-top: 15px;
+      font-size: 0.8rem;
+      color: #64748b;
+      text-align: center;
+      line-height: 1.6;
+    }
+
+    .phone-link-info strong {
+      color: #94a3b8;
+    }
+
+    /* Phone mode ringing */
+    .phone-waiting {
+      text-align: center;
+      padding: 20px;
+    }
+
+    .phone-waiting-icon {
+      font-size: 4rem;
+      margin-bottom: 15px;
+      animation: bounce 1s infinite;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    .phone-waiting-text {
+      font-size: 1.2rem;
+      color: #22d3ee;
+      margin-bottom: 10px;
+    }
+
+    .phone-distance-display {
+      font-size: 2rem;
+      color: #94a3b8;
+    }
+
+    .outside-settings {
+      margin-top: 15px;
+      padding: 15px;
+      background: rgba(251, 191, 36, 0.1);
+      border-radius: 10px;
+    }
+
+    .distance-options {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    .distance-option {
+      flex: 1;
+      min-width: 80px;
+      padding: 8px 12px;
+      background: rgba(255,255,255,0.05);
+      border: 2px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      color: #94a3b8;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .distance-option:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .distance-option.active {
+      background: rgba(251, 191, 36, 0.2);
+      border-color: #fbbf24;
+      color: #fbbf24;
+    }
+
+    .location-status {
+      margin-top: 12px;
+      padding: 10px;
+      background: rgba(0,0,0,0.2);
+      border-radius: 8px;
+      font-size: 0.85rem;
+      color: #64748b;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .location-status.set {
+      color: #4ade80;
+    }
+
+    .loc-icon {
+      font-size: 1.1rem;
+    }
+
+    /* Outside mode ringing */
+    .outside-instruction {
+      font-size: 1.5rem;
+      color: #fbbf24;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .distance-display {
+      font-size: 3rem;
+      font-weight: 700;
+      color: #f87171;
+      margin-bottom: 10px;
+    }
+
+    .distance-display.close {
+      color: #fbbf24;
+    }
+
+    .distance-display.success {
+      color: #4ade80;
+    }
+
+    .target-distance {
+      font-size: 1rem;
+      color: #64748b;
+      margin-bottom: 20px;
+    }
+
+    .gps-status {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+      color: #22d3ee;
+      font-size: 0.9rem;
+    }
+
+    .gps-dot {
+      width: 10px;
+      height: 10px;
+      background: #22d3ee;
+      border-radius: 50%;
+      animation: pulse-dot 1s infinite;
+    }
+
+    /* Alarm ringing state */
+    .alarm-ringing {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(180deg, #1a0a0a 0%, #2e1a1a 100%);
+      z-index: 1000;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .alarm-ringing.active {
+      display: flex;
+      animation: pulse-bg 1s infinite;
+    }
+
+    @keyframes pulse-bg {
+      0%, 100% { background: linear-gradient(180deg, #1a0a0a 0%, #2e1a1a 100%); }
+      50% { background: linear-gradient(180deg, #2a0a0a 0%, #3e1a1a 100%); }
+    }
+
+    .wake-up-text {
+      font-size: 3rem;
+      font-weight: 700;
+      color: #f87171;
+      margin-bottom: 20px;
+      animation: shake 0.5s infinite;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
+    }
+
+    .ringing-time {
+      font-size: 5rem;
+      font-weight: 200;
+      margin-bottom: 30px;
+    }
+
+    .speak-instruction {
+      font-size: 1.2rem;
+      color: #94a3b8;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .affirmation-to-say {
+      font-size: 1.3rem;
+      color: #fbbf24;
+      background: rgba(251, 191, 36, 0.1);
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 30px;
+      text-align: center;
+      max-width: 500px;
+      line-height: 1.6;
+    }
+
+    .listening-indicator {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+      color: #4ade80;
+    }
+
+    .listening-dot {
+      width: 12px;
+      height: 12px;
+      background: #4ade80;
+      border-radius: 50%;
+      animation: pulse-dot 1s infinite;
+    }
+
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(1.2); }
+    }
+
+    .heard-text {
+      font-size: 1.1rem;
+      color: #64748b;
+      margin-bottom: 20px;
+      min-height: 30px;
+    }
+
+    .heard-text span {
+      color: #22d3ee;
+    }
+
+    .match-progress {
+      width: 300px;
+      height: 8px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 4px;
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+
+    .match-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #f87171, #4ade80);
+      transition: width 0.3s;
+    }
+
+    .snooze-btn {
+      padding: 15px 40px;
+      background: rgba(255,255,255,0.1);
+      border: 2px solid rgba(255,255,255,0.2);
+      border-radius: 10px;
+      color: #94a3b8;
+      font-size: 1rem;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+
+    .snooze-btn:hover {
+      background: rgba(255,255,255,0.15);
+    }
+
+    .snooze-count {
+      font-size: 0.85rem;
+      color: #64748b;
+      margin-top: 10px;
+    }
+
+    /* Success state */
+    .alarm-success {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(180deg, #0a1a0a 0%, #1a2e1a 100%);
+      z-index: 1001;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .alarm-success.active {
+      display: flex;
+    }
+
+    .success-icon {
+      font-size: 5rem;
+      margin-bottom: 20px;
+    }
+
+    .success-text {
+      font-size: 2rem;
+      color: #4ade80;
+      margin-bottom: 20px;
+    }
+
+    .motivation-text {
+      font-size: 1.2rem;
+      color: #94a3b8;
+      max-width: 500px;
+      line-height: 1.7;
+      margin-bottom: 30px;
+    }
+
+    .close-success-btn {
+      padding: 15px 40px;
+      background: linear-gradient(135deg, #4ade80, #22c55e);
+      border: none;
+      border-radius: 10px;
+      color: white;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .instructions {
+      margin-top: 30px;
+      padding: 20px;
+      background: rgba(251, 191, 36, 0.1);
+      border: 1px solid rgba(251, 191, 36, 0.3);
+      border-radius: 12px;
+      max-width: 500px;
+    }
+
+    .instructions h4 {
+      color: #fbbf24;
+      margin-bottom: 10px;
+    }
+
+    .instructions p {
+      color: #94a3b8;
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
+    .back-link {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      color: #64748b;
+      text-decoration: none;
+      font-size: 0.9rem;
+    }
+
+    .back-link:hover {
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <a href="#" class="back-link" id="backLink">← Back</a>
+
+  <div class="clock-container">
+    <div class="current-time" id="currentTime">00:00</div>
+    <div class="current-date" id="currentDate">Loading...</div>
+
+    <div class="alarm-setting">
+      <div class="alarm-label">Set Alarm</div>
+
+      <div class="alarm-time-input">
+        <input type="number" class="time-input" id="alarmHour" min="1" max="12" value="7">
+        <span class="time-separator">:</span>
+        <input type="number" class="time-input" id="alarmMinute" min="0" max="59" value="00">
+        <div class="am-pm-toggle">
+          <button class="am-pm-btn active" id="amBtn">AM</button>
+          <button class="am-pm-btn" id="pmBtn">PM</button>
+        </div>
+      </div>
+
+      <div class="alarm-toggle">
+        <span class="toggle-label">Alarm</span>
+        <div class="toggle" id="alarmToggle"></div>
+      </div>
+
+      <div class="wakeup-mode">
+        <div class="mode-label">To turn off alarm:</div>
+        <div class="mode-options">
+          <button class="mode-option active" data-mode="affirmation">Say Affirmation</button>
+          <button class="mode-option" data-mode="motivation">Say Quote</button>
+          <button class="mode-option" data-mode="phone">Phone + Outside 📱</button>
+        </div>
+      </div>
+
+      <div class="phone-settings" id="phoneSettings" style="display: none;">
+        <div class="mode-label" style="margin-top: 15px;">Pair with your phone:</div>
+        <div class="room-code-display">
+          <div class="room-code" id="roomCode">----</div>
+          <div class="room-code-label">Enter this code on your phone</div>
+        </div>
+        <div class="phone-status" id="phoneStatus">
+          <span class="phone-icon">📱</span>
+          <span id="phoneStatusText">Waiting for phone to connect...</span>
+        </div>
+        <div class="phone-link-info">
+          Open on phone: <strong>file → phone-tracker.html</strong><br>
+          <small>(or host it somewhere and bookmark it)</small>
+        </div>
+        <div class="mode-label" style="margin-top: 15px;">Distance required:</div>
+        <div class="distance-options">
+          <button class="distance-option active" data-distance="10">10m</button>
+          <button class="distance-option" data-distance="30">30m</button>
+          <button class="distance-option" data-distance="100">100m</button>
+        </div>
+      </div>
+
+      <div class="outside-settings" id="outsideSettings" style="display: none;">
+        <div class="mode-label" style="margin-top: 15px;">Distance required to dismiss:</div>
+        <div class="distance-options">
+          <button class="distance-option active" data-distance="10">10m (Open door)</button>
+          <button class="distance-option" data-distance="30">30m (Step outside)</button>
+          <button class="distance-option" data-distance="100">100m (Short walk)</button>
+        </div>
+        <div class="location-status" id="locationStatus">
+          <span class="loc-icon">📍</span>
+          <span id="locStatusText">Location not set - will capture when alarm is enabled</span>
+        </div>
+      </div>
+
+      <div class="alarm-status" id="alarmStatus">
+        Alarm set for <span id="alarmTimeDisplay">7:00 AM</span>
+      </div>
+    </div>
+
+    <div class="instructions">
+      <h4>How it works</h4>
+      <p>
+        Keep this tab open overnight. When the alarm goes off, you'll need to
+        <strong>say your affirmation out loud</strong> to turn it off. No tapping snooze half-asleep -
+        you have to actually wake up and speak.
+      </p>
+    </div>
+  </div>
+
+  <!-- Alarm Ringing Overlay -->
+  <div class="alarm-ringing" id="alarmRinging">
+    <div class="wake-up-text">WAKE UP!</div>
+    <div class="ringing-time" id="ringingTime">7:00</div>
+
+    <!-- Speech mode UI -->
+    <div id="speechModeUI">
+      <div class="speak-instruction">Say this out loud to turn off the alarm:</div>
+      <div class="affirmation-to-say" id="affirmationToSay">Loading...</div>
+
+      <div class="listening-indicator">
+        <div class="listening-dot"></div>
+        <span>Listening...</span>
+      </div>
+
+      <div class="heard-text" id="heardText">Waiting for you to speak...</div>
+
+      <div class="match-progress">
+        <div class="match-progress-fill" id="matchProgress" style="width: 0%"></div>
+      </div>
+    </div>
+
+    <!-- Outside mode UI (local GPS) -->
+    <div id="outsideModeUI" style="display: none;">
+      <div class="outside-instruction">🚪 Go outside to turn off the alarm!</div>
+
+      <div class="distance-display" id="currentDistance">--</div>
+      <div class="target-distance">Target: <span id="targetDistanceDisplay">10</span>m away from bed</div>
+
+      <div class="gps-status">
+        <div class="gps-dot"></div>
+        <span id="gpsStatusText">Tracking your location...</span>
+      </div>
+
+      <div class="match-progress">
+        <div class="match-progress-fill" id="distanceProgress" style="width: 0%"></div>
+      </div>
+    </div>
+
+    <!-- Phone mode UI -->
+    <div id="phoneModeUI" style="display: none;">
+      <div class="phone-waiting">
+        <div class="phone-waiting-icon">📱</div>
+        <div class="phone-waiting-text">Grab your phone and GO OUTSIDE!</div>
+        <div class="phone-distance-display">Distance: <span id="phoneDistance">0</span>m / <span id="phoneTarget">10</span>m</div>
+        <div class="match-progress" style="margin-top: 20px;">
+          <div class="match-progress-fill" id="phoneDistanceProgress" style="width: 0%"></div>
+        </div>
+        <div style="margin-top: 15px; color: #64748b; font-size: 0.9rem;" id="phoneTrackingStatus">
+          Waiting for phone location...
+        </div>
+      </div>
+    </div>
+
+    <button class="snooze-btn" id="snoozeBtn">Snooze (5 min)</button>
+    <div class="snooze-count" id="snoozeCount">2 snoozes remaining</div>
+  </div>
+
+  <!-- Success Overlay -->
+  <div class="alarm-success" id="alarmSuccess">
+    <div class="success-icon">🌅</div>
+    <div class="success-text">Good Morning!</div>
+    <div class="motivation-text" id="motivationText">
+      You did it. You're awake, you're alive, and you're still on your journey.
+      Today is another chance to be better than yesterday. Make it count.
+    </div>
+    <button class="close-success-btn" id="closeSuccessBtn">Start My Day</button>
+  </div>
+
+  <!-- MQTT.js for phone communication -->
+  <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+  <script src="alarm-clock.js"></script>
+</body>
+</html>

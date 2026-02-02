@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Nicotine Detox Timeline</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+      color: white;
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+      background: linear-gradient(135deg, #4ade80, #22d3ee);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #64748b;
+      margin-bottom: 40px;
+    }
+
+    .current-day {
+      text-align: center;
+      margin-bottom: 40px;
+      padding: 20px;
+      background: rgba(74, 222, 128, 0.1);
+      border: 2px solid #4ade80;
+      border-radius: 16px;
+    }
+
+    .current-day-label {
+      font-size: 0.9rem;
+      color: #4ade80;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    .current-day-number {
+      font-size: 4rem;
+      font-weight: 900;
+      color: #4ade80;
+    }
+
+    .current-day-input {
+      margin-top: 10px;
+    }
+
+    .current-day-input label {
+      color: #64748b;
+      font-size: 0.85rem;
+    }
+
+    .current-day-input input {
+      width: 80px;
+      padding: 8px;
+      margin-left: 10px;
+      background: rgba(0,0,0,0.3);
+      border: 1px solid #4ade80;
+      border-radius: 6px;
+      color: white;
+      text-align: center;
+      font-size: 1rem;
+    }
+
+    /* Timeline */
+    .timeline {
+      position: relative;
+      padding-left: 40px;
+    }
+
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 15px;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+      background: linear-gradient(180deg, #ef4444, #f97316, #eab308, #22c55e, #22d3ee);
+      border-radius: 2px;
+    }
+
+    .phase {
+      position: relative;
+      margin-bottom: 30px;
+      padding: 20px;
+      background: rgba(255,255,255,0.03);
+      border-radius: 12px;
+      border-left: 3px solid transparent;
+    }
+
+    .phase.current {
+      background: rgba(74, 222, 128, 0.1);
+      border-left-color: #4ade80;
+      box-shadow: 0 0 30px rgba(74, 222, 128, 0.2);
+    }
+
+    .phase.completed {
+      opacity: 0.6;
+    }
+
+    .phase.completed::after {
+      content: '✓';
+      position: absolute;
+      right: 20px;
+      top: 20px;
+      font-size: 1.5rem;
+      color: #4ade80;
+    }
+
+    .phase::before {
+      content: '';
+      position: absolute;
+      left: -33px;
+      top: 25px;
+      width: 16px;
+      height: 16px;
+      background: #1e293b;
+      border: 3px solid #64748b;
+      border-radius: 50%;
+    }
+
+    .phase.completed::before {
+      background: #4ade80;
+      border-color: #4ade80;
+    }
+
+    .phase.current::before {
+      background: #4ade80;
+      border-color: #4ade80;
+      box-shadow: 0 0 10px #4ade80;
+    }
+
+    .phase-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 15px;
+    }
+
+    .phase-time {
+      font-size: 0.75rem;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .phase-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin-bottom: 5px;
+    }
+
+    .phase-difficulty {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .difficulty-extreme {
+      background: rgba(239, 68, 68, 0.2);
+      color: #ef4444;
+    }
+
+    .difficulty-hard {
+      background: rgba(249, 115, 22, 0.2);
+      color: #f97316;
+    }
+
+    .difficulty-medium {
+      background: rgba(234, 179, 8, 0.2);
+      color: #eab308;
+    }
+
+    .difficulty-easy {
+      background: rgba(34, 197, 94, 0.2);
+      color: #22c55e;
+    }
+
+    .difficulty-free {
+      background: rgba(34, 211, 238, 0.2);
+      color: #22d3ee;
+    }
+
+    .phase-body {
+      color: #94a3b8;
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+
+    .symptoms {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .symptom {
+      padding: 6px 12px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 20px;
+      font-size: 0.8rem;
+      color: #cbd5e1;
+    }
+
+    .symptom.good {
+      background: rgba(74, 222, 128, 0.1);
+      color: #4ade80;
+    }
+
+    .tips {
+      margin-top: 15px;
+      padding: 12px;
+      background: rgba(0,0,0,0.2);
+      border-radius: 8px;
+    }
+
+    .tips-title {
+      font-size: 0.75rem;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+
+    .tips-list {
+      list-style: none;
+      font-size: 0.85rem;
+      color: #94a3b8;
+    }
+
+    .tips-list li {
+      padding: 4px 0;
+    }
+
+    .tips-list li::before {
+      content: '→ ';
+      color: #4ade80;
+    }
+
+    /* Body healing section */
+    .healing-section {
+      margin-top: 50px;
+      padding: 30px;
+      background: rgba(255,255,255,0.03);
+      border-radius: 16px;
+    }
+
+    .healing-section h2 {
+      font-size: 1.5rem;
+      margin-bottom: 20px;
+      color: #22d3ee;
+    }
+
+    .healing-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+    }
+
+    .healing-item {
+      padding: 20px;
+      background: rgba(0,0,0,0.2);
+      border-radius: 12px;
+      border-left: 3px solid #22d3ee;
+    }
+
+    .healing-time {
+      font-size: 0.75rem;
+      color: #22d3ee;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 5px;
+    }
+
+    .healing-title {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .healing-desc {
+      font-size: 0.85rem;
+      color: #64748b;
+    }
+
+    /* Progress bar */
+    .progress-section {
+      margin-top: 50px;
+    }
+
+    .progress-section h2 {
+      font-size: 1.2rem;
+      margin-bottom: 15px;
+      color: #f97316;
+    }
+
+    .progress-bar-container {
+      background: rgba(0,0,0,0.3);
+      border-radius: 10px;
+      height: 30px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #ef4444, #f97316, #eab308, #22c55e);
+      border-radius: 10px;
+      transition: width 0.5s ease;
+    }
+
+    .progress-bar-text {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 0.85rem;
+    }
+
+    .milestone-markers {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 8px;
+      font-size: 0.7rem;
+      color: #64748b;
+    }
+
+    /* Money saved */
+    .money-section {
+      margin-top: 30px;
+      text-align: center;
+      padding: 25px;
+      background: rgba(74, 222, 128, 0.05);
+      border-radius: 12px;
+      border: 1px solid rgba(74, 222, 128, 0.2);
+    }
+
+    .money-label {
+      font-size: 0.85rem;
+      color: #64748b;
+      margin-bottom: 5px;
+    }
+
+    .money-amount {
+      font-size: 3rem;
+      font-weight: 900;
+      color: #4ade80;
+    }
+
+    .money-note {
+      font-size: 0.8rem;
+      color: #64748b;
+      margin-top: 10px;
+    }
+
+    .settings-row {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-top: 15px;
+      flex-wrap: wrap;
+    }
+
+    .settings-row label {
+      color: #64748b;
+      font-size: 0.8rem;
+    }
+
+    .settings-row input {
+      width: 60px;
+      padding: 5px;
+      margin-left: 8px;
+      background: rgba(0,0,0,0.3);
+      border: 1px solid #4ade80;
+      border-radius: 4px;
+      color: white;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Nicotine Detox Timeline</h1>
+    <p class="subtitle">Your body is healing. Here's what to expect.</p>
+
+    <div class="current-day">
+      <div class="current-day-label">You are on</div>
+      <div class="current-day-number">Day <span id="dayNumber">1</span></div>
+      <div class="current-day-input">
+        <label>Update your day: <input type="number" id="dayInput" min="0" max="365" value="1"></label>
+      </div>
+    </div>
+
+    <div class="timeline" id="timeline">
+      <!-- Phases will be inserted here -->
+    </div>
+
+    <div class="progress-section">
+      <h2>Nicotine-Free Progress</h2>
+      <div class="progress-bar-container">
+        <div class="progress-bar-fill" id="progressFill"></div>
+        <div class="progress-bar-text" id="progressText">0%</div>
+      </div>
+      <div class="milestone-markers">
+        <span>Day 1</span>
+        <span>Day 3</span>
+        <span>Week 1</span>
+        <span>Week 2</span>
+        <span>Month 1</span>
+        <span>Month 3</span>
+      </div>
+    </div>
+
+    <div class="money-section">
+      <div class="money-label">Estimated Money Saved</div>
+      <div class="money-amount" id="moneySaved">$0</div>
+      <div class="money-note">Based on daily spending on nicotine + alcohol</div>
+      <div class="settings-row">
+        <label>Daily nicotine cost: $<input type="number" id="nicotineCost" min="0" max="100" value="8"></label>
+        <label>Daily alcohol cost: $<input type="number" id="alcoholCost" min="0" max="100" value="0"></label>
+      </div>
+    </div>
+
+    <div class="healing-section">
+      <h2>How Your Body Is Healing</h2>
+      <div class="healing-grid">
+        <div class="healing-item">
+          <div class="healing-time">20 Minutes</div>
+          <div class="healing-title">Heart Rate Normalizes</div>
+          <div class="healing-desc">Blood pressure and pulse start returning to normal levels.</div>
+        </div>
+        <div class="healing-item">
+          <div class="healing-time">8 Hours</div>
+          <div class="healing-title">Oxygen Levels Rise</div>
+          <div class="healing-desc">Carbon monoxide levels drop, oxygen levels increase in blood.</div>
+        </div>
+        <div class="healing-item">
+          <div class="healing-time">24 Hours</div>
+          <div class="healing-title">Heart Attack Risk Drops</div>
+          <div class="healing-desc">Your risk of heart attack begins to decrease.</div>
+        </div>
+        <div class="healing-item">
+          <div class="healing-time">48 Hours</div>
+          <div class="healing-title">Taste & Smell Return</div>
+          <div class="healing-desc">Nerve endings start regenerating. Food tastes better.</div>
+        </div>
+        <div class="healing-item">
+          <div class="healing-time">72 Hours</div>
+          <div class="healing-title">Nicotine Gone</div>
+          <div class="healing-desc">Nicotine is completely eliminated from your body.</div>
+        </div>
+        <div class="healing-item">
+          <div class="healing-time">2-3 Weeks</div>
+          <div class="healing-title">Circulation Improves</div>
+          <div class="healing-desc">Walking becomes easier. Lung function increases up to 30%.</div>
+        </div>
+        <div class="healing-item">
+          <div class="healing-time">1-3 Months</div>
+          <div class="healing-title">Energy Returns</div>
+          <div class="healing-desc">Cravings rare. Sleep normalizes. Feeling genuinely good.</div>
+        </div>
+        <div class="healing-item">
+          <div class="healing-time">1 Year</div>
+          <div class="healing-title">Major Health Gains</div>
+          <div class="healing-desc">Heart disease risk cut in half. You're basically a non-user now.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="detox-timeline.js"></script>
+</body>
+</html>

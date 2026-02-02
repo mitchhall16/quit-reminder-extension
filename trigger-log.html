@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Trigger Log</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+      color: white;
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+
+    .container {
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 2rem;
+      margin-bottom: 10px;
+      background: linear-gradient(135deg, #a855f7, #6366f1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #64748b;
+      margin-bottom: 30px;
+    }
+
+    .mode-toggle {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 30px;
+    }
+
+    .mode-btn {
+      flex: 1;
+      padding: 15px;
+      background: rgba(255,255,255,0.05);
+      border: 2px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      color: #94a3b8;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    .mode-btn.active {
+      background: rgba(168, 85, 247, 0.2);
+      border-color: #a855f7;
+      color: #a855f7;
+    }
+
+    .section {
+      background: rgba(255,255,255,0.03);
+      border-radius: 16px;
+      padding: 25px;
+      margin-bottom: 20px;
+    }
+
+    .section-title {
+      font-size: 0.8rem;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 15px;
+    }
+
+    .log-section, .patterns-section {
+      display: none;
+    }
+
+    .log-section.active, .patterns-section.active {
+      display: block;
+    }
+
+    /* Log Entry Form */
+    .type-buttons {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .type-btn {
+      flex: 1;
+      min-width: 100px;
+      padding: 12px;
+      background: rgba(255,255,255,0.05);
+      border: 2px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      color: #94a3b8;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .type-btn.active {
+      border-color: #a855f7;
+      color: #a855f7;
+      background: rgba(168, 85, 247, 0.1);
+    }
+
+    .type-btn .icon {
+      font-size: 1.5rem;
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    .intensity-slider {
+      margin: 20px 0;
+    }
+
+    .intensity-label {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      color: #94a3b8;
+      font-size: 0.9rem;
+    }
+
+    .intensity-value {
+      font-size: 2rem;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    .intensity-1, .intensity-2, .intensity-3 { color: #4ade80; }
+    .intensity-4, .intensity-5 { color: #facc15; }
+    .intensity-6, .intensity-7 { color: #fb923c; }
+    .intensity-8, .intensity-9, .intensity-10 { color: #ef4444; }
+
+    input[type="range"] {
+      width: 100%;
+      height: 8px;
+      border-radius: 4px;
+      background: linear-gradient(to right, #4ade80, #facc15, #fb923c, #ef4444);
+      -webkit-appearance: none;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: white;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    }
+
+    .trigger-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .trigger-btn {
+      padding: 8px 16px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 20px;
+      color: #94a3b8;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+
+    .trigger-btn.active {
+      background: rgba(168, 85, 247, 0.2);
+      border-color: #a855f7;
+      color: #a855f7;
+    }
+
+    textarea {
+      width: 100%;
+      padding: 12px;
+      background: rgba(0,0,0,0.3);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 10px;
+      color: white;
+      font-size: 1rem;
+      resize: vertical;
+      min-height: 80px;
+      margin-bottom: 15px;
+    }
+
+    textarea:focus {
+      outline: none;
+      border-color: #a855f7;
+    }
+
+    .outcome-buttons {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .outcome-btn {
+      flex: 1;
+      padding: 15px;
+      border-radius: 10px;
+      border: 2px solid;
+      cursor: pointer;
+      text-align: center;
+      font-weight: 600;
+    }
+
+    .outcome-btn.resisted {
+      background: rgba(74, 222, 128, 0.1);
+      border-color: rgba(74, 222, 128, 0.3);
+      color: #4ade80;
+    }
+
+    .outcome-btn.resisted.active {
+      background: rgba(74, 222, 128, 0.3);
+      border-color: #4ade80;
+    }
+
+    .outcome-btn.caved {
+      background: rgba(239, 68, 68, 0.1);
+      border-color: rgba(239, 68, 68, 0.3);
+      color: #ef4444;
+    }
+
+    .outcome-btn.caved.active {
+      background: rgba(239, 68, 68, 0.3);
+      border-color: #ef4444;
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 15px;
+      background: linear-gradient(135deg, #a855f7, #6366f1);
+      border: none;
+      border-radius: 10px;
+      color: white;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .submit-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* History */
+    .history-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .history-item {
+      padding: 15px;
+      background: rgba(0,0,0,0.2);
+      border-radius: 10px;
+      border-left: 4px solid;
+    }
+
+    .history-item.resisted {
+      border-left-color: #4ade80;
+    }
+
+    .history-item.caved {
+      border-left-color: #ef4444;
+    }
+
+    .history-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .history-type {
+      font-weight: 600;
+    }
+
+    .history-time {
+      color: #64748b;
+      font-size: 0.85rem;
+    }
+
+    .history-intensity {
+      font-size: 0.85rem;
+      color: #94a3b8;
+      margin-bottom: 5px;
+    }
+
+    .history-triggers {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-bottom: 8px;
+    }
+
+    .history-trigger {
+      padding: 3px 8px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 10px;
+      font-size: 0.75rem;
+      color: #94a3b8;
+    }
+
+    .history-notes {
+      font-size: 0.9rem;
+      color: #cbd5e1;
+      font-style: italic;
+    }
+
+    /* Patterns */
+    .pattern-card {
+      background: rgba(0,0,0,0.2);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 15px;
+    }
+
+    .pattern-title {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 10px;
+      color: #a855f7;
+    }
+
+    .pattern-stat {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .pattern-stat:last-child {
+      border-bottom: none;
+    }
+
+    .pattern-label {
+      color: #94a3b8;
+    }
+
+    .pattern-value {
+      font-weight: 600;
+    }
+
+    .no-data {
+      text-align: center;
+      padding: 40px;
+      color: #64748b;
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-top: 30px;
+      color: #64748b;
+      text-decoration: none;
+      font-size: 0.9rem;
+    }
+
+    .back-link:hover {
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Trigger Log</h1>
+    <p class="subtitle">Track your cravings. Find your patterns.</p>
+
+    <div class="mode-toggle">
+      <button class="mode-btn active" id="logModeBtn">Log Craving</button>
+      <button class="mode-btn" id="historyModeBtn">History</button>
+      <button class="mode-btn" id="patternsModeBtn">Patterns</button>
+    </div>
+
+    <!-- LOG SECTION -->
+    <div class="log-section active" id="logSection">
+      <div class="section">
+        <div class="section-title">What are you craving?</div>
+        <div class="type-buttons">
+          <button class="type-btn" data-type="nicotine">
+            <span class="icon">🚬</span>
+            Nicotine
+          </button>
+          <button class="type-btn" data-type="alcohol">
+            <span class="icon">🍺</span>
+            Alcohol
+          </button>
+          <button class="type-btn" data-type="porn">
+            <span class="icon">🔞</span>
+            Porn
+          </button>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">How intense? (1-10)</div>
+        <div class="intensity-slider">
+          <div class="intensity-value intensity-5" id="intensityValue">5</div>
+          <input type="range" min="1" max="10" value="5" id="intensitySlider">
+          <div class="intensity-label">
+            <span>Mild urge</span>
+            <span>Can barely resist</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">What triggered it?</div>
+        <div class="trigger-buttons">
+          <button class="trigger-btn" data-trigger="stress">Stress</button>
+          <button class="trigger-btn" data-trigger="boredom">Boredom</button>
+          <button class="trigger-btn" data-trigger="social">Social situation</button>
+          <button class="trigger-btn" data-trigger="tired">Tired</button>
+          <button class="trigger-btn" data-trigger="hungry">Hungry</button>
+          <button class="trigger-btn" data-trigger="lonely">Lonely</button>
+          <button class="trigger-btn" data-trigger="celebration">Celebrating</button>
+          <button class="trigger-btn" data-trigger="habit">Habit/routine</button>
+          <button class="trigger-btn" data-trigger="saw-it">Saw someone else</button>
+          <button class="trigger-btn" data-trigger="anger">Angry/frustrated</button>
+          <button class="trigger-btn" data-trigger="anxiety">Anxiety</button>
+          <button class="trigger-btn" data-trigger="unknown">Don't know</button>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Notes (optional)</div>
+        <textarea id="notesInput" placeholder="What happened? What were you thinking?"></textarea>
+      </div>
+
+      <div class="section">
+        <div class="section-title">What did you do?</div>
+        <div class="outcome-buttons">
+          <button class="outcome-btn resisted" data-outcome="resisted">I Resisted</button>
+          <button class="outcome-btn caved" data-outcome="caved">I Gave In</button>
+        </div>
+      </div>
+
+      <button class="submit-btn" id="submitBtn" disabled>Log This Craving</button>
+    </div>
+
+    <!-- HISTORY SECTION -->
+    <div class="log-section" id="historySection">
+      <div class="section">
+        <div class="section-title">Recent Cravings</div>
+        <div class="history-list" id="historyList">
+          <div class="no-data">No cravings logged yet.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PATTERNS SECTION -->
+    <div class="log-section" id="patternsSection">
+      <div class="pattern-card">
+        <div class="pattern-title">Your Stats</div>
+        <div class="pattern-stat">
+          <span class="pattern-label">Total cravings logged</span>
+          <span class="pattern-value" id="totalCravings">0</span>
+        </div>
+        <div class="pattern-stat">
+          <span class="pattern-label">Times resisted</span>
+          <span class="pattern-value" id="timesResisted">0</span>
+        </div>
+        <div class="pattern-stat">
+          <span class="pattern-label">Resistance rate</span>
+          <span class="pattern-value" id="resistanceRate">0%</span>
+        </div>
+        <div class="pattern-stat">
+          <span class="pattern-label">Average intensity</span>
+          <span class="pattern-value" id="avgIntensity">0</span>
+        </div>
+      </div>
+
+      <div class="pattern-card">
+        <div class="pattern-title">Top Triggers</div>
+        <div id="topTriggers">
+          <div class="no-data">Log more cravings to see patterns.</div>
+        </div>
+      </div>
+
+      <div class="pattern-card">
+        <div class="pattern-title">Danger Times</div>
+        <div id="dangerTimes">
+          <div class="no-data">Log more cravings to see patterns.</div>
+        </div>
+      </div>
+    </div>
+
+    <a href="#" class="back-link" id="backLink">← Back</a>
+  </div>
+
+  <script src="trigger-log.js"></script>
+</body>
+</html>

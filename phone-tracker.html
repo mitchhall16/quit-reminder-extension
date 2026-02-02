@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Alarm Tracker</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(180deg, #0a0a0f 0%, #1a1a2e 100%);
+      color: white;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .container {
+      text-align: center;
+      max-width: 400px;
+      width: 100%;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      color: #64748b;
+      font-size: 0.9rem;
+      margin-bottom: 30px;
+    }
+
+    /* Pairing Screen */
+    .pairing-screen {
+      display: block;
+    }
+
+    .code-input-container {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    .code-digit {
+      width: 60px;
+      height: 70px;
+      font-size: 2rem;
+      text-align: center;
+      background: rgba(255,255,255,0.1);
+      border: 2px solid rgba(255,255,255,0.2);
+      border-radius: 12px;
+      color: white;
+      font-family: monospace;
+    }
+
+    .code-digit:focus {
+      outline: none;
+      border-color: #4ade80;
+      background: rgba(74, 222, 128, 0.1);
+    }
+
+    .pair-btn {
+      width: 100%;
+      padding: 18px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      background: linear-gradient(135deg, #4ade80, #22c55e);
+      border: none;
+      border-radius: 12px;
+      color: white;
+      cursor: pointer;
+      margin-bottom: 15px;
+    }
+
+    .pair-btn:disabled {
+      background: #333;
+      color: #666;
+    }
+
+    .status-text {
+      color: #64748b;
+      font-size: 0.9rem;
+    }
+
+    .status-text.error {
+      color: #f87171;
+    }
+
+    .status-text.success {
+      color: #4ade80;
+    }
+
+    /* Paired/Waiting Screen */
+    .waiting-screen {
+      display: none;
+    }
+
+    .paired-indicator {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 15px 25px;
+      background: rgba(74, 222, 128, 0.1);
+      border: 1px solid rgba(74, 222, 128, 0.3);
+      border-radius: 12px;
+      margin-bottom: 30px;
+    }
+
+    .paired-dot {
+      width: 12px;
+      height: 12px;
+      background: #4ade80;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .paired-text {
+      color: #4ade80;
+      font-weight: 500;
+    }
+
+    .waiting-message {
+      font-size: 1.2rem;
+      color: #94a3b8;
+      margin-bottom: 20px;
+    }
+
+    .waiting-icon {
+      font-size: 4rem;
+      margin-bottom: 20px;
+    }
+
+    .disconnect-btn {
+      padding: 12px 30px;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 8px;
+      color: #94a3b8;
+      font-size: 0.9rem;
+      cursor: pointer;
+      margin-top: 30px;
+    }
+
+    /* Alarm Active Screen */
+    .alarm-active-screen {
+      display: none;
+    }
+
+    .alarm-active-screen.show {
+      display: block;
+    }
+
+    .go-outside-header {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #f87171;
+      margin-bottom: 10px;
+      animation: shake 0.5s infinite;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-3px); }
+      75% { transform: translateX(3px); }
+    }
+
+    .instruction {
+      font-size: 1.1rem;
+      color: #fbbf24;
+      margin-bottom: 30px;
+    }
+
+    .distance-big {
+      font-size: 5rem;
+      font-weight: 700;
+      color: #f87171;
+      line-height: 1;
+      margin-bottom: 10px;
+    }
+
+    .distance-big.close {
+      color: #fbbf24;
+    }
+
+    .distance-big.success {
+      color: #4ade80;
+    }
+
+    .distance-unit {
+      font-size: 1.5rem;
+      color: #64748b;
+    }
+
+    .target-info {
+      color: #64748b;
+      margin-bottom: 20px;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 12px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 6px;
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #f87171, #fbbf24, #4ade80);
+      transition: width 0.3s;
+    }
+
+    .gps-info {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      color: #22d3ee;
+      font-size: 0.9rem;
+    }
+
+    .gps-dot {
+      width: 8px;
+      height: 8px;
+      background: #22d3ee;
+      border-radius: 50%;
+      animation: pulse 1s infinite;
+    }
+
+    /* Success Screen */
+    .success-screen {
+      display: none;
+    }
+
+    .success-screen.show {
+      display: block;
+    }
+
+    .success-icon {
+      font-size: 5rem;
+      margin-bottom: 20px;
+    }
+
+    .success-title {
+      font-size: 2rem;
+      color: #4ade80;
+      margin-bottom: 15px;
+    }
+
+    .success-message {
+      color: #94a3b8;
+      font-size: 1.1rem;
+      line-height: 1.6;
+      margin-bottom: 30px;
+    }
+
+    .done-btn {
+      padding: 15px 40px;
+      background: linear-gradient(135deg, #4ade80, #22c55e);
+      border: none;
+      border-radius: 10px;
+      color: white;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Pairing Screen -->
+    <div class="pairing-screen" id="pairingScreen">
+      <h1>Alarm Phone Tracker</h1>
+      <p class="subtitle">Enter the code from your computer</p>
+
+      <div class="code-input-container">
+        <input type="tel" class="code-digit" maxlength="1" id="digit1" inputmode="numeric">
+        <input type="tel" class="code-digit" maxlength="1" id="digit2" inputmode="numeric">
+        <input type="tel" class="code-digit" maxlength="1" id="digit3" inputmode="numeric">
+        <input type="tel" class="code-digit" maxlength="1" id="digit4" inputmode="numeric">
+      </div>
+
+      <button class="pair-btn" id="pairBtn" disabled>Connect</button>
+      <p class="status-text" id="pairStatus">Enter 4-digit code to pair</p>
+    </div>
+
+    <!-- Waiting Screen -->
+    <div class="waiting-screen" id="waitingScreen">
+      <div class="paired-indicator">
+        <div class="paired-dot"></div>
+        <span class="paired-text">Connected to computer</span>
+      </div>
+
+      <div class="waiting-icon">😴</div>
+      <p class="waiting-message">Waiting for alarm to ring...</p>
+      <p class="status-text">Keep this page open overnight</p>
+
+      <button class="disconnect-btn" id="disconnectBtn">Disconnect</button>
+    </div>
+
+    <!-- Alarm Active Screen -->
+    <div class="alarm-active-screen" id="alarmActiveScreen">
+      <div class="go-outside-header">WAKE UP!</div>
+      <p class="instruction">Walk outside to turn off the alarm!</p>
+
+      <div class="distance-big" id="distanceDisplay">0<span class="distance-unit">m</span></div>
+      <p class="target-info">Need to walk <span id="targetDisplay">10</span>m from bed</p>
+
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+      </div>
+
+      <div class="gps-info">
+        <div class="gps-dot"></div>
+        <span id="gpsStatus">Getting GPS...</span>
+      </div>
+    </div>
+
+    <!-- Success Screen -->
+    <div class="success-screen" id="successScreen">
+      <div class="success-icon">🌅</div>
+      <div class="success-title">You did it!</div>
+      <p class="success-message">
+        Alarm dismissed. You got up and went outside - that's the hardest part done!
+        Have a great day.
+      </p>
+      <button class="done-btn" id="doneBtn">Done</button>
+    </div>
+  </div>
+
+  <!-- MQTT.js library -->
+  <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+
+  <script>
+    // State
+    let mqttClient = null;
+    let roomCode = '';
+    let bedLocation = null;
+    let targetDistance = 10;
+    let locationWatchId = null;
+    let isAlarmActive = false;
+
+    // DOM elements
+    const pairingScreen = document.getElementById('pairingScreen');
+    const waitingScreen = document.getElementById('waitingScreen');
+    const alarmActiveScreen = document.getElementById('alarmActiveScreen');
+    const successScreen = document.getElementById('successScreen');
+    const pairBtn = document.getElementById('pairBtn');
+    const pairStatus = document.getElementById('pairStatus');
+    const digits = [
+      document.getElementById('digit1'),
+      document.getElementById('digit2'),
+      document.getElementById('digit3'),
+      document.getElementById('digit4')
+    ];
+
+    // Auto-focus and auto-advance digit inputs
+    digits.forEach((digit, index) => {
+      digit.addEventListener('input', (e) => {
+        const val = e.target.value.replace(/\D/g, '');
+        e.target.value = val.slice(-1);
+
+        if (val && index < 3) {
+          digits[index + 1].focus();
+        }
+
+        checkCodeComplete();
+      });
+
+      digit.addEventListener('keydown', (e) => {
+        if (e.key === 'Backspace' && !e.target.value && index > 0) {
+          digits[index - 1].focus();
+        }
+      });
+
+      digit.addEventListener('focus', () => {
+        e.target.select();
+      });
+    });
+
+    function checkCodeComplete() {
+      const code = digits.map(d => d.value).join('');
+      pairBtn.disabled = code.length !== 4;
+    }
+
+    // Connect button
+    pairBtn.addEventListener('click', () => {
+      roomCode = digits.map(d => d.value).join('');
+      if (roomCode.length !== 4) return;
+
+      connectToRoom(roomCode);
+    });
+
+    // Disconnect button
+    document.getElementById('disconnectBtn').addEventListener('click', () => {
+      disconnect();
+      showScreen('pairing');
+    });
+
+    // Done button
+    document.getElementById('doneBtn').addEventListener('click', () => {
+      disconnect();
+      showScreen('pairing');
+      digits.forEach(d => d.value = '');
+      pairBtn.disabled = true;
+    });
+
+    function showScreen(screen) {
+      pairingScreen.style.display = 'none';
+      waitingScreen.style.display = 'none';
+      alarmActiveScreen.classList.remove('show');
+      successScreen.classList.remove('show');
+
+      switch(screen) {
+        case 'pairing':
+          pairingScreen.style.display = 'block';
+          break;
+        case 'waiting':
+          waitingScreen.style.display = 'block';
+          break;
+        case 'active':
+          alarmActiveScreen.classList.add('show');
+          break;
+        case 'success':
+          successScreen.classList.add('show');
+          break;
+      }
+    }
+
+    function connectToRoom(code) {
+      pairStatus.textContent = 'Connecting...';
+      pairStatus.className = 'status-text';
+
+      // Connect to free public MQTT broker via WebSocket
+      const clientId = 'phone_' + Math.random().toString(16).substr(2, 8);
+
+      mqttClient = mqtt.connect('wss://broker.hivemq.com:8884/mqtt', {
+        clientId: clientId,
+        keepalive: 60,
+        clean: true,
+        reconnectPeriod: 5000
+      });
+
+      mqttClient.on('connect', () => {
+        console.log('Connected to MQTT broker');
+
+        // Subscribe to room topic
+        const topic = `wakeupalarm/${code}`;
+        mqttClient.subscribe(topic, (err) => {
+          if (err) {
+            pairStatus.textContent = 'Failed to join room';
+            pairStatus.className = 'status-text error';
+            return;
+          }
+
+          // Send "phone joined" message
+          mqttClient.publish(topic, JSON.stringify({
+            type: 'phone_joined',
+            timestamp: Date.now()
+          }));
+
+          pairStatus.textContent = 'Connected!';
+          pairStatus.className = 'status-text success';
+
+          setTimeout(() => showScreen('waiting'), 500);
+        });
+      });
+
+      mqttClient.on('message', (topic, message) => {
+        try {
+          const data = JSON.parse(message.toString());
+          handleMessage(data);
+        } catch (e) {
+          console.error('Failed to parse message:', e);
+        }
+      });
+
+      mqttClient.on('error', (err) => {
+        console.error('MQTT error:', err);
+        pairStatus.textContent = 'Connection error. Try again.';
+        pairStatus.className = 'status-text error';
+      });
+
+      mqttClient.on('close', () => {
+        if (isAlarmActive) {
+          // Try to reconnect if alarm was active
+          console.log('Connection lost, reconnecting...');
+        }
+      });
+    }
+
+    function handleMessage(data) {
+      console.log('Received:', data);
+
+      switch (data.type) {
+        case 'alarm_ringing':
+          // Alarm started! Begin tracking
+          bedLocation = data.bedLocation;
+          targetDistance = data.targetDistance || 10;
+          document.getElementById('targetDisplay').textContent = targetDistance;
+          isAlarmActive = true;
+          showScreen('active');
+          startLocationTracking();
+
+          // Vibrate if supported
+          if (navigator.vibrate) {
+            navigator.vibrate([200, 100, 200, 100, 200]);
+          }
+          break;
+
+        case 'alarm_stopped':
+          // Computer stopped the alarm (snooze or manual)
+          isAlarmActive = false;
+          stopLocationTracking();
+          showScreen('waiting');
+          break;
+
+        case 'ping':
+          // Respond to keep connection alive
+          sendMessage({ type: 'pong' });
+          break;
+      }
+    }
+
+    function sendMessage(data) {
+      if (mqttClient && mqttClient.connected) {
+        const topic = `wakeupalarm/${roomCode}`;
+        mqttClient.publish(topic, JSON.stringify(data));
+      }
+    }
+
+    function disconnect() {
+      stopLocationTracking();
+      isAlarmActive = false;
+      if (mqttClient) {
+        mqttClient.end();
+        mqttClient = null;
+      }
+    }
+
+    // Geolocation
+    function startLocationTracking() {
+      const gpsStatus = document.getElementById('gpsStatus');
+
+      if (!navigator.geolocation) {
+        gpsStatus.textContent = 'GPS not available';
+        return;
+      }
+
+      gpsStatus.textContent = 'Getting location...';
+
+      locationWatchId = navigator.geolocation.watchPosition(
+        (position) => {
+          const currentLat = position.coords.latitude;
+          const currentLng = position.coords.longitude;
+
+          if (bedLocation) {
+            const distance = calculateDistance(
+              bedLocation.lat, bedLocation.lng,
+              currentLat, currentLng
+            );
+            updateDistanceUI(distance);
+
+            // Send position update to computer
+            sendMessage({
+              type: 'location_update',
+              distance: Math.round(distance),
+              lat: currentLat,
+              lng: currentLng
+            });
+
+            // Check if far enough
+            if (distance >= targetDistance) {
+              alarmDismissed();
+            }
+          }
+
+          gpsStatus.textContent = `Accuracy: ${Math.round(position.coords.accuracy)}m`;
+        },
+        (error) => {
+          gpsStatus.textContent = `GPS error: ${error.message}`;
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+      );
+    }
+
+    function stopLocationTracking() {
+      if (locationWatchId !== null) {
+        navigator.geolocation.clearWatch(locationWatchId);
+        locationWatchId = null;
+      }
+    }
+
+    function calculateDistance(lat1, lng1, lat2, lng2) {
+      const R = 6371e3; // Earth radius in meters
+      const φ1 = lat1 * Math.PI / 180;
+      const φ2 = lat2 * Math.PI / 180;
+      const Δφ = (lat2 - lat1) * Math.PI / 180;
+      const Δλ = (lng2 - lng1) * Math.PI / 180;
+
+      const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+                Math.cos(φ1) * Math.cos(φ2) *
+                Math.sin(Δλ/2) * Math.sin(Δλ/2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+
+      return R * c;
+    }
+
+    function updateDistanceUI(distance) {
+      const distanceDisplay = document.getElementById('distanceDisplay');
+      const progressFill = document.getElementById('progressFill');
+
+      const rounded = Math.round(distance);
+      distanceDisplay.innerHTML = `${rounded}<span class="distance-unit">m</span>`;
+
+      const progress = Math.min(100, (distance / targetDistance) * 100);
+      progressFill.style.width = progress + '%';
+
+      distanceDisplay.classList.remove('close', 'success');
+      if (progress >= 100) {
+        distanceDisplay.classList.add('success');
+      } else if (progress >= 50) {
+        distanceDisplay.classList.add('close');
+      }
+    }
+
+    function alarmDismissed() {
+      isAlarmActive = false;
+      stopLocationTracking();
+
+      // Tell computer to stop alarm
+      sendMessage({
+        type: 'dismiss_alarm',
+        timestamp: Date.now()
+      });
+
+      // Vibrate success
+      if (navigator.vibrate) {
+        navigator.vibrate([100, 50, 100, 50, 300]);
+      }
+
+      showScreen('success');
+    }
+
+    // Prevent sleep on mobile (request wake lock if available)
+    async function requestWakeLock() {
+      if ('wakeLock' in navigator) {
+        try {
+          await navigator.wakeLock.request('screen');
+          console.log('Wake lock active');
+        } catch (e) {
+          console.log('Wake lock failed:', e);
+        }
+      }
+    }
+
+    // Keep screen awake when alarm is active
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden && isAlarmActive) {
+        requestWakeLock();
+      }
+    });
+
+    // Focus first digit on load
+    digits[0].focus();
+  </script>
+</body>
+</html>

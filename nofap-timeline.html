@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>NoFap Recovery Timeline</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(180deg, #1a0a2e 0%, #16213e 100%);
+      color: white;
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+      background: linear-gradient(135deg, #a855f7, #6366f1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #64748b;
+      margin-bottom: 40px;
+    }
+
+    .current-day {
+      text-align: center;
+      margin-bottom: 40px;
+      padding: 20px;
+      background: rgba(168, 85, 247, 0.1);
+      border: 2px solid #a855f7;
+      border-radius: 16px;
+    }
+
+    .current-day-label {
+      font-size: 0.9rem;
+      color: #a855f7;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    .current-day-number {
+      font-size: 4rem;
+      font-weight: 900;
+      color: #a855f7;
+    }
+
+    .streak-status {
+      margin-top: 10px;
+      font-size: 1.1rem;
+      color: #c4b5fd;
+    }
+
+    /* Timeline */
+    .timeline {
+      position: relative;
+      padding-left: 40px;
+    }
+
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 15px;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+      background: linear-gradient(180deg, #ef4444, #f97316, #eab308, #22c55e, #a855f7, #6366f1);
+      border-radius: 2px;
+    }
+
+    .phase {
+      position: relative;
+      margin-bottom: 30px;
+      padding: 20px;
+      background: rgba(255,255,255,0.03);
+      border-radius: 12px;
+      border-left: 3px solid transparent;
+    }
+
+    .phase.current {
+      background: rgba(168, 85, 247, 0.1);
+      border-left-color: #a855f7;
+      box-shadow: 0 0 30px rgba(168, 85, 247, 0.2);
+    }
+
+    .phase.completed {
+      opacity: 0.6;
+    }
+
+    .phase.completed::after {
+      content: '✓';
+      position: absolute;
+      right: 20px;
+      top: 20px;
+      font-size: 1.5rem;
+      color: #a855f7;
+    }
+
+    .phase::before {
+      content: '';
+      position: absolute;
+      left: -33px;
+      top: 25px;
+      width: 16px;
+      height: 16px;
+      background: #16213e;
+      border: 3px solid #64748b;
+      border-radius: 50%;
+    }
+
+    .phase.completed::before {
+      background: #a855f7;
+      border-color: #a855f7;
+    }
+
+    .phase.current::before {
+      background: #a855f7;
+      border-color: #a855f7;
+      box-shadow: 0 0 10px #a855f7;
+    }
+
+    .phase-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 15px;
+    }
+
+    .phase-time {
+      font-size: 0.75rem;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .phase-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin-bottom: 5px;
+    }
+
+    .phase-difficulty {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .difficulty-extreme {
+      background: rgba(239, 68, 68, 0.2);
+      color: #ef4444;
+    }
+
+    .difficulty-hard {
+      background: rgba(249, 115, 22, 0.2);
+      color: #f97316;
+    }
+
+    .difficulty-medium {
+      background: rgba(234, 179, 8, 0.2);
+      color: #eab308;
+    }
+
+    .difficulty-easy {
+      background: rgba(34, 197, 94, 0.2);
+      color: #22c55e;
+    }
+
+    .difficulty-free {
+      background: rgba(168, 85, 247, 0.2);
+      color: #a855f7;
+    }
+
+    .phase-body {
+      color: #94a3b8;
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+
+    .symptoms {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .symptom {
+      padding: 6px 12px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 20px;
+      font-size: 0.8rem;
+      color: #cbd5e1;
+    }
+
+    .symptom.good {
+      background: rgba(168, 85, 247, 0.1);
+      color: #c4b5fd;
+    }
+
+    .tips {
+      margin-top: 15px;
+      padding: 12px;
+      background: rgba(0,0,0,0.2);
+      border-radius: 8px;
+    }
+
+    .tips-title {
+      font-size: 0.75rem;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+
+    .tips-list {
+      list-style: none;
+      font-size: 0.85rem;
+      color: #94a3b8;
+    }
+
+    .tips-list li {
+      padding: 4px 0;
+    }
+
+    .tips-list li::before {
+      content: '→ ';
+      color: #a855f7;
+    }
+
+    /* Benefits section */
+    .benefits-section {
+      margin-top: 50px;
+      padding: 30px;
+      background: rgba(255,255,255,0.03);
+      border-radius: 16px;
+    }
+
+    .benefits-section h2 {
+      font-size: 1.5rem;
+      margin-bottom: 20px;
+      color: #a855f7;
+    }
+
+    .benefits-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+    }
+
+    .benefit-item {
+      padding: 20px;
+      background: rgba(0,0,0,0.2);
+      border-radius: 12px;
+      border-left: 3px solid #a855f7;
+    }
+
+    .benefit-time {
+      font-size: 0.75rem;
+      color: #a855f7;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 5px;
+    }
+
+    .benefit-title {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .benefit-desc {
+      font-size: 0.85rem;
+      color: #64748b;
+    }
+
+    /* Progress bar */
+    .progress-section {
+      margin-top: 50px;
+    }
+
+    .progress-section h2 {
+      font-size: 1.2rem;
+      margin-bottom: 15px;
+      color: #c4b5fd;
+    }
+
+    .progress-bar-container {
+      background: rgba(0,0,0,0.3);
+      border-radius: 10px;
+      height: 30px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #ef4444, #f97316, #eab308, #22c55e, #a855f7);
+      border-radius: 10px;
+      transition: width 0.5s ease;
+    }
+
+    .progress-bar-text {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 0.85rem;
+    }
+
+    .milestone-markers {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 8px;
+      font-size: 0.7rem;
+      color: #64748b;
+    }
+
+    /* Science section */
+    .science-section {
+      margin-top: 40px;
+      padding: 25px;
+      background: rgba(99, 102, 241, 0.1);
+      border-radius: 12px;
+      border: 1px solid rgba(99, 102, 241, 0.3);
+    }
+
+    .science-section h3 {
+      color: #6366f1;
+      margin-bottom: 15px;
+    }
+
+    .science-section p {
+      color: #94a3b8;
+      font-size: 0.9rem;
+      line-height: 1.7;
+      margin-bottom: 10px;
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-top: 30px;
+      color: #64748b;
+      text-decoration: none;
+      font-size: 0.9rem;
+    }
+
+    .back-link:hover {
+      color: #a855f7;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>NoFap Recovery Timeline</h1>
+    <p class="subtitle">Rewire your brain. Reclaim your energy.</p>
+
+    <div class="current-day">
+      <div class="current-day-label">Your Streak</div>
+      <div class="current-day-number">Day <span id="dayNumber">0</span></div>
+      <div class="streak-status" id="streakStatus">Starting your journey</div>
+    </div>
+
+    <div class="timeline" id="timeline">
+      <!-- Phases will be inserted here -->
+    </div>
+
+    <div class="progress-section">
+      <h2>90-Day Reboot Progress</h2>
+      <div class="progress-bar-container">
+        <div class="progress-bar-fill" id="progressFill"></div>
+        <div class="progress-bar-text" id="progressText">0%</div>
+      </div>
+      <div class="milestone-markers">
+        <span>Day 1</span>
+        <span>Week 1</span>
+        <span>Week 2</span>
+        <span>Day 30</span>
+        <span>Day 60</span>
+        <span>Day 90</span>
+      </div>
+    </div>
+
+    <div class="benefits-section">
+      <h2>Benefits You'll Experience</h2>
+      <div class="benefits-grid">
+        <div class="benefit-item">
+          <div class="benefit-time">Week 1</div>
+          <div class="benefit-title">Increased Energy</div>
+          <div class="benefit-desc">Your body stops wasting vital nutrients. You feel more alive.</div>
+        </div>
+        <div class="benefit-item">
+          <div class="benefit-time">Week 2</div>
+          <div class="benefit-title">Mental Clarity</div>
+          <div class="benefit-desc">Brain fog lifts. Focus improves. Thoughts become sharper.</div>
+        </div>
+        <div class="benefit-item">
+          <div class="benefit-time">Week 3-4</div>
+          <div class="benefit-title">Confidence Boost</div>
+          <div class="benefit-desc">Eye contact easier. Social anxiety decreases. Self-respect grows.</div>
+        </div>
+        <div class="benefit-item">
+          <div class="benefit-time">Month 1-2</div>
+          <div class="benefit-title">Emotional Stability</div>
+          <div class="benefit-desc">Mood swings reduce. Depression lifts. Motivation returns.</div>
+        </div>
+        <div class="benefit-item">
+          <div class="benefit-time">Month 2-3</div>
+          <div class="benefit-title">Deeper Voice</div>
+          <div class="benefit-desc">Testosterone levels optimize. Voice may deepen slightly.</div>
+        </div>
+        <div class="benefit-item">
+          <div class="benefit-time">Day 90+</div>
+          <div class="benefit-title">Full Reboot</div>
+          <div class="benefit-desc">Brain fully rewired. New neural pathways formed. You're free.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="science-section">
+      <h3>The Science Behind It</h3>
+      <p>Pornography floods your brain with dopamine - the same chemical released by drugs. Over time, your brain builds tolerance, requiring more extreme content for the same hit. This rewires your reward system.</p>
+      <p>When you stop, your brain goes through withdrawal as dopamine receptors heal. This is why the first 2 weeks are hardest. But stick with it - neuroplasticity means your brain CAN rewire back to normal.</p>
+      <p>Studies show it takes roughly 90 days for significant changes in brain structure. That's why 90 days is the standard "reboot" period.</p>
+    </div>
+
+    <a href="#" class="back-link" id="backLink">← Back to Extension</a>
+  </div>
+
+  <script src="nofap-timeline.js"></script>
+</body>
+</html>

@@ -1,0 +1,28 @@
+{
+  "manifest_version": 3,
+  "name": "Quit Reminder",
+  "version": "1.0",
+  "description": "Helps you stay accountable to quitting nicotine and alcohol",
+  "permissions": ["storage", "alarms", "tabs"],
+  "host_permissions": ["https://maps.googleapis.com/*", "https://api.anthropic.com/*"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "48": "icon.png"
+    }
+  },
+  "chrome_url_overrides": {
+    "newtab": "newtab.html"
+  },
+  "icons": {
+    "48": "icon.png",
+    "128": "icon.png"
+  },
+  "web_accessible_resources": [{
+    "resources": ["detox-timeline.html", "alcohol-timeline.html", "nofap-timeline.html", "supplement-schedule.html", "supplement-reminder.html", "crisis-chat.html", "cooking-guide.html", "voice-message.html", "trigger-log.html", "coping-tools.html", "alarm-clock.html", "bedtime-block.html", "time-limit.html", "weekly-scheduler.html", "recipe-chat.html", "daily-habits.html"],
+    "matches": ["<all_urls>"]
+  }]
+}

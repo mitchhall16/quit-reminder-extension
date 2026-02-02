@@ -469,6 +469,17 @@
     });
 
     function showScreen(screen) {
+      console.log('showScreen:', screen);
+
+      // Don't show success unless explicitly from alarm dismissal
+      if (screen === 'success' && !isAlarmActive) {
+        // Check if we're coming from active state - if locationWatchId exists, we were tracking
+        if (locationWatchId === null && startLocation === null) {
+          console.log('Blocking success screen - alarm was never active');
+          return;
+        }
+      }
+
       pairingScreen.style.display = 'none';
       waitingScreen.style.display = 'none';
       alarmActiveScreen.classList.remove('show');
@@ -753,6 +764,13 @@
     }
 
     function alarmDismissed() {
+      // ONLY dismiss if alarm is actually active
+      if (!isAlarmActive) {
+        console.log('alarmDismissed called but alarm not active - ignoring');
+        return;
+      }
+
+      console.log('ALARM DISMISSED!');
       isAlarmActive = false;
       stopLocationTracking();
 
@@ -789,26 +807,32 @@
       }
     });
 
-    // Test GPS button
-    document.getElementById('testGpsBtn').addEventListener('click', () => {
-      document.getElementById('testGpsBtn').textContent = 'Getting location...';
+    // Test GPS button - completely isolated, doesn't affect alarm state
+    document.getElementById('testGpsBtn').addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const btn = document.getElementById('testGpsBtn');
+      btn.textContent = 'Getting location...';
 
       if (!navigator.geolocation) {
         alert('GPS not supported on this browser!');
+        btn.textContent = '📍 Test GPS Location';
         return;
       }
 
+      // Use getCurrentPosition, NOT watchPosition, so it's one-time only
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const lat = position.coords.latitude.toFixed(6);
           const lng = position.coords.longitude.toFixed(6);
           const acc = Math.round(position.coords.accuracy);
-          alert(`GPS Working!\n\nLat: ${lat}\nLng: ${lng}\nAccuracy: ${acc}m`);
-          document.getElementById('testGpsBtn').textContent = '📍 Test GPS Location';
+          alert('GPS Working!\n\nLat: ' + lat + '\nLng: ' + lng + '\nAccuracy: ' + acc + 'm');
+          btn.textContent = '📍 GPS Works!';
         },
         (error) => {
-          alert(`GPS Error: ${error.message}\n\nMake sure Location Services is enabled and you allowed permission.`);
-          document.getElementById('testGpsBtn').textContent = '📍 Test GPS Location';
+          alert('GPS Error: ' + error.message + '\n\nMake sure Location Services is enabled.');
+          btn.textContent = '📍 Test GPS Location';
         },
         { enableHighAccuracy: true, timeout: 10000 }
       );

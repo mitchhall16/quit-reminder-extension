@@ -267,20 +267,47 @@ function updateDistanceDisplay(distance) {
 // ==========================================
 
 function generateRoomCode() {
-  // Generate 4-digit code
-  roomCode = Math.floor(1000 + Math.random() * 9000).toString();
+  // Check if we have a saved code first
+  const savedCode = localStorage.getItem('alarmRoomCode');
+  if (savedCode) {
+    roomCode = savedCode;
+  } else {
+    // Generate new 4-digit code
+    roomCode = Math.floor(1000 + Math.random() * 9000).toString();
+    localStorage.setItem('alarmRoomCode', roomCode);
+  }
   document.getElementById('roomCode').textContent = roomCode;
+  console.log('Room code:', roomCode);
+  return roomCode;
+}
+
+function resetRoomCode() {
+  // Force generate a new code
+  roomCode = Math.floor(1000 + Math.random() * 9000).toString();
+  localStorage.setItem('alarmRoomCode', roomCode);
+  document.getElementById('roomCode').textContent = roomCode;
+  console.log('New room code:', roomCode);
+  // Reconnect with new code
+  disconnectMQTT();
+  connectMQTT();
   return roomCode;
 }
 
 function connectMQTT() {
   if (mqttClient && mqttClient.connected) {
+    console.log('Already connected to MQTT');
     return; // Already connected
   }
 
   const phoneStatusText = document.getElementById('phoneStatusText');
   const phoneStatus = document.getElementById('phoneStatus');
+
+  if (!roomCode) {
+    generateRoomCode();
+  }
+
   phoneStatusText.textContent = 'Connecting to server...';
+  console.log('Connecting to MQTT with room code:', roomCode);
 
   const clientId = 'computer_' + Math.random().toString(16).substr(2, 8);
 
@@ -292,19 +319,23 @@ function connectMQTT() {
   });
 
   mqttClient.on('connect', () => {
-    console.log('MQTT connected');
+    console.log('MQTT connected!');
     const topic = `wakeupalarm/${roomCode}`;
+    console.log('Subscribing to topic:', topic);
 
     mqttClient.subscribe(topic, (err) => {
       if (err) {
+        console.error('Subscribe error:', err);
         phoneStatusText.textContent = 'Connection error. Try refreshing.';
         return;
       }
-      phoneStatusText.textContent = 'Waiting for phone to connect...';
+      console.log('Subscribed successfully');
+      phoneStatusText.textContent = 'Ready! Waiting for phone to connect... (Code: ' + roomCode + ')';
     });
   });
 
   mqttClient.on('message', (topic, message) => {
+    console.log('Received message on topic:', topic);
     try {
       const data = JSON.parse(message.toString());
       handlePhoneMessage(data);
@@ -315,7 +346,18 @@ function connectMQTT() {
 
   mqttClient.on('error', (err) => {
     console.error('MQTT error:', err);
-    phoneStatusText.textContent = 'Connection error';
+    phoneStatusText.textContent = 'Connection error - retrying...';
+  });
+
+  mqttClient.on('close', () => {
+    console.log('MQTT connection closed');
+    if (phoneStatusText) {
+      phoneStatusText.textContent = 'Disconnected - reconnecting...';
+    }
+  });
+
+  mqttClient.on('reconnect', () => {
+    console.log('MQTT reconnecting...');
   });
 }
 
@@ -328,10 +370,30 @@ function disconnectMQTT() {
 }
 
 function sendToPhone(data) {
-  if (mqttClient && mqttClient.connected && roomCode) {
-    const topic = `wakeupalarm/${roomCode}`;
-    mqttClient.publish(topic, JSON.stringify(data));
+  console.log('sendToPhone called:', data, 'roomCode:', roomCode, 'connected:', mqttClient?.connected);
+
+  if (!roomCode) {
+    console.error('No room code!');
+    return;
   }
+
+  if (!mqttClient || !mqttClient.connected) {
+    console.error('MQTT not connected, reconnecting...');
+    connectMQTT();
+    // Retry after connection
+    setTimeout(() => sendToPhone(data), 2000);
+    return;
+  }
+
+  const topic = `wakeupalarm/${roomCode}`;
+  console.log('Publishing to topic:', topic);
+  mqttClient.publish(topic, JSON.stringify(data), {}, (err) => {
+    if (err) {
+      console.error('Publish error:', err);
+    } else {
+      console.log('Message sent successfully');
+    }
+  });
 }
 
 function handlePhoneMessage(data) {

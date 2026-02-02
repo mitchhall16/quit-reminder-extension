@@ -453,6 +453,9 @@
     function connectToRoom(code) {
       pairStatus.textContent = 'Connecting...';
       pairStatus.className = 'status-text';
+      roomCode = code;
+
+      console.log('Connecting to room:', code);
 
       // Connect to free public MQTT broker via WebSocket
       const clientId = 'phone_' + Math.random().toString(16).substr(2, 8);
@@ -465,16 +468,21 @@
       });
 
       mqttClient.on('connect', () => {
-        console.log('Connected to MQTT broker');
+        console.log('Connected to MQTT broker!');
 
         // Subscribe to room topic
         const topic = `wakeupalarm/${code}`;
+        console.log('Subscribing to:', topic);
+
         mqttClient.subscribe(topic, (err) => {
           if (err) {
+            console.error('Subscribe error:', err);
             pairStatus.textContent = 'Failed to join room';
             pairStatus.className = 'status-text error';
             return;
           }
+
+          console.log('Subscribed! Sending phone_joined...');
 
           // Send "phone joined" message
           mqttClient.publish(topic, JSON.stringify({
@@ -485,11 +493,15 @@
           pairStatus.textContent = 'Connected!';
           pairStatus.className = 'status-text success';
 
+          // Save the room code for reconnection
+          localStorage.setItem('phoneRoomCode', code);
+
           setTimeout(() => showScreen('waiting'), 500);
         });
       });
 
       mqttClient.on('message', (topic, message) => {
+        console.log('Received message:', message.toString());
         try {
           const data = JSON.parse(message.toString());
           handleMessage(data);
@@ -505,10 +517,15 @@
       });
 
       mqttClient.on('close', () => {
+        console.log('Connection closed');
         if (isAlarmActive) {
-          // Try to reconnect if alarm was active
-          console.log('Connection lost, reconnecting...');
+          console.log('Reconnecting because alarm is active...');
         }
+      });
+
+      mqttClient.on('reconnect', () => {
+        console.log('Reconnecting...');
+        pairStatus.textContent = 'Reconnecting...';
       });
     }
 

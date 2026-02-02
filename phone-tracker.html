@@ -314,9 +314,14 @@
         <span class="paired-text">Connected to computer</span>
       </div>
 
-      <div class="waiting-icon">😴</div>
-      <p class="waiting-message">Waiting for alarm to ring...</p>
-      <p class="status-text">Keep this page open overnight</p>
+      <div class="waiting-icon">✅</div>
+      <p class="waiting-message">You're all set!</p>
+      <p class="status-text" style="max-width: 300px; line-height: 1.6;">
+        You can close this now. When the alarm rings, open this page again and it will start tracking.
+      </p>
+      <p class="status-text" style="margin-top: 15px; color: #fbbf24;">
+        Bookmark this page for easy access!
+      </p>
 
       <button class="disconnect-btn" id="disconnectBtn">Disconnect</button>
     </div>
@@ -484,11 +489,18 @@
 
           console.log('Subscribed! Sending phone_joined...');
 
-          // Send "phone joined" message
+          // Send "phone joined" message and request alarm status
           mqttClient.publish(topic, JSON.stringify({
             type: 'phone_joined',
             timestamp: Date.now()
           }));
+
+          // Ask computer if alarm is currently ringing
+          setTimeout(() => {
+            mqttClient.publish(topic, JSON.stringify({
+              type: 'request_status'
+            }));
+          }, 500);
 
           pairStatus.textContent = 'Connected!';
           pairStatus.className = 'status-text success';
@@ -496,7 +508,7 @@
           // Save the room code for reconnection
           localStorage.setItem('phoneRoomCode', code);
 
-          setTimeout(() => showScreen('waiting'), 500);
+          setTimeout(() => showScreen('waiting'), 1000);
         });
       });
 
@@ -534,6 +546,7 @@
 
       switch (data.type) {
         case 'alarm_ringing':
+        case 'alarm_status':  // Also handle status updates
           // Alarm started! Begin tracking
           bedLocation = data.bedLocation;
           targetDistance = data.targetDistance || 10;
@@ -560,6 +573,11 @@
           sendMessage({ type: 'pong' });
           break;
       }
+    }
+
+    // When phone connects, ask computer for current alarm status
+    function requestAlarmStatus() {
+      sendMessage({ type: 'request_status' });
     }
 
     function sendMessage(data) {
@@ -701,8 +719,24 @@
       }
     });
 
-    // Focus first digit on load
-    digits[0].focus();
+    // Check for saved room code and auto-fill
+    const savedRoomCode = localStorage.getItem('phoneRoomCode');
+    if (savedRoomCode && savedRoomCode.length === 4) {
+      // Auto-fill the code
+      for (let i = 0; i < 4; i++) {
+        digits[i].value = savedRoomCode[i];
+      }
+      pairBtn.disabled = false;
+      pairStatus.textContent = 'Last code auto-filled. Tap Connect or enter new code.';
+
+      // Auto-connect after a short delay
+      setTimeout(() => {
+        connectToRoom(savedRoomCode);
+      }, 500);
+    } else {
+      // Focus first digit on load
+      digits[0].focus();
+    }
   </script>
 </body>
 </html>

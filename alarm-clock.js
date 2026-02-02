@@ -407,6 +407,31 @@ function handlePhoneMessage(data) {
       phoneConnected = true;
       phoneStatusText.textContent = 'Phone connected! ✓';
       phoneStatus.classList.add('connected');
+
+      // If alarm is already ringing, tell phone immediately
+      if (isRinging) {
+        sendToPhone({
+          type: 'alarm_status',
+          ringing: true,
+          bedLocation: bedLocation,
+          targetDistance: requiredDistance,
+          timestamp: Date.now()
+        });
+      }
+      break;
+
+    case 'request_status':
+      // Phone is asking if alarm is ringing (phone just woke up)
+      console.log('Phone requesting status, isRinging:', isRinging);
+      if (isRinging) {
+        sendToPhone({
+          type: 'alarm_status',
+          ringing: true,
+          bedLocation: bedLocation,
+          targetDistance: requiredDistance,
+          timestamp: Date.now()
+        });
+      }
       break;
 
     case 'location_update':

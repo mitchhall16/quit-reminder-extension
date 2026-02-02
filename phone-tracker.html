@@ -316,14 +316,21 @@
 
       <div class="waiting-icon">✅</div>
       <p class="waiting-message">You're all set!</p>
+
+      <button class="pair-btn" id="checkAlarmBtn" style="margin: 20px 0; background: linear-gradient(135deg, #f87171, #dc2626);">
+        🔔 Alarm Ringing? Tap Here!
+      </button>
+
       <p class="status-text" style="max-width: 300px; line-height: 1.6;">
-        You can close this now. When the alarm rings, open this page again and it will start tracking.
-      </p>
-      <p class="status-text" style="margin-top: 15px; color: #fbbf24;">
-        Bookmark this page for easy access!
+        When alarm rings, tap the button above or just reopen this page.
       </p>
 
       <button class="disconnect-btn" id="disconnectBtn">Disconnect</button>
+
+      <div style="margin-top: 20px; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 8px; font-size: 0.75rem; color: #64748b;">
+        Debug: Room <span id="debugRoomCode">-</span> |
+        MQTT: <span id="debugMqttStatus">-</span>
+      </div>
     </div>
 
     <!-- Alarm Active Screen -->
@@ -474,6 +481,12 @@
 
       mqttClient.on('connect', () => {
         console.log('Connected to MQTT broker!');
+
+        // Update debug info
+        const debugRoom = document.getElementById('debugRoomCode');
+        const debugMqtt = document.getElementById('debugMqttStatus');
+        if (debugRoom) debugRoom.textContent = code;
+        if (debugMqtt) debugMqtt.textContent = 'Connected';
 
         // Subscribe to room topic
         const topic = `wakeupalarm/${code}`;
@@ -716,6 +729,25 @@
     document.addEventListener('visibilitychange', () => {
       if (!document.hidden && isAlarmActive) {
         requestWakeLock();
+      }
+    });
+
+    // Check alarm button - manually request status
+    document.getElementById('checkAlarmBtn').addEventListener('click', () => {
+      console.log('Manually checking alarm status...');
+      if (mqttClient && mqttClient.connected) {
+        sendMessage({ type: 'request_status' });
+        document.getElementById('checkAlarmBtn').textContent = 'Checking...';
+
+        // If no response in 2 seconds, show error
+        setTimeout(() => {
+          if (!isAlarmActive) {
+            document.getElementById('checkAlarmBtn').textContent = '🔔 Alarm Ringing? Tap Here!';
+            alert('No response from computer. Make sure:\n1. Computer alarm page is open\n2. Same room code on both devices\n3. Alarm is actually ringing');
+          }
+        }, 2000);
+      } else {
+        alert('Not connected! Enter the room code and tap Connect first.');
       }
     });
 

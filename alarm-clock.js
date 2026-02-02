@@ -68,8 +68,47 @@ const snoozeBtn = document.getElementById('snoozeBtn');
 const snoozeCount = document.getElementById('snoozeCount');
 const alarmSuccess = document.getElementById('alarmSuccess');
 
+// Storage helper - works both as extension and standalone webpage
+const storage = {
+  get: function(keys, callback) {
+    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.sync) {
+      chrome.storage.sync.get(keys, callback);
+    } else {
+      // Fallback to localStorage
+      const result = {};
+      keys.forEach(key => {
+        const val = localStorage.getItem(key);
+        if (val) result[key] = JSON.parse(val);
+      });
+      callback(result);
+    }
+  },
+  set: function(data) {
+    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+      chrome.storage.local.set(data);
+    } else {
+      // Fallback to localStorage
+      Object.keys(data).forEach(key => {
+        localStorage.setItem(key, JSON.stringify(data[key]));
+      });
+    }
+  },
+  getLocal: function(keys, callback) {
+    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+      chrome.storage.local.get(keys, callback);
+    } else {
+      const result = {};
+      keys.forEach(key => {
+        const val = localStorage.getItem(key);
+        if (val) result[key] = JSON.parse(val);
+      });
+      callback(result);
+    }
+  }
+};
+
 // Load affirmation from storage
-chrome.storage.sync.get(['affirmation'], (result) => {
+storage.get(['affirmation'], (result) => {
   if (result.affirmation) {
     affirmationText = result.affirmation;
   }
@@ -365,7 +404,7 @@ function getTextToSay() {
 }
 
 // Load saved alarm settings
-chrome.storage.local.get(['alarmSettings'], (result) => {
+storage.getLocal(['alarmSettings'], (result) => {
   if (result.alarmSettings) {
     const settings = result.alarmSettings;
     alarmHour = settings.hour;
@@ -761,7 +800,7 @@ function updateAlarmDisplay() {
 }
 
 function saveAlarmSettings() {
-  chrome.storage.local.set({
+  storage.set({
     alarmSettings: {
       hour: alarmHour,
       minute: alarmMinute,

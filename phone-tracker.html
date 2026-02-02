@@ -612,7 +612,10 @@
         case 'alarm_ringing':
         case 'alarm_status':  // Also handle status updates
           // Alarm started! Begin tracking
-          bedLocation = data.bedLocation;
+          // IGNORE bedLocation from computer - always use phone's current position
+          // This ensures you actually have to MOVE from where you are RIGHT NOW
+          bedLocation = null;
+          startLocation = null; // Force fresh capture
           targetDistance = data.targetDistance || 10;
           document.getElementById('targetDisplay').textContent = targetDistance;
           isAlarmActive = true;
@@ -661,6 +664,8 @@
     }
 
     // Geolocation
+    let gpsReadingCount = 0;
+
     function startLocationTracking() {
       const gpsStatus = document.getElementById('gpsStatus');
 
@@ -670,34 +675,34 @@
         return;
       }
 
-      gpsStatus.textContent = 'Getting location...';
+      gpsStatus.textContent = 'Getting your starting location...';
       startLocation = null; // Reset start location
+      gpsReadingCount = 0; // Reset reading count
 
       locationWatchId = navigator.geolocation.watchPosition(
         (position) => {
+          gpsReadingCount++;
           const currentLat = position.coords.latitude;
           const currentLng = position.coords.longitude;
 
-          // Use bedLocation from computer, or capture start position on first reading
-          let referenceLocation = bedLocation;
+          console.log('GPS reading #' + gpsReadingCount, currentLat, currentLng);
 
-          if (!referenceLocation || !referenceLocation.lat) {
-            // No bed location from computer - use first phone position as start
-            if (!startLocation) {
-              startLocation = { lat: currentLat, lng: currentLng };
-              gpsStatus.textContent = 'Start position set! Now walk away...';
-              console.log('Set start location:', startLocation);
-              return; // Don't calculate distance yet, need to move first
-            }
-            referenceLocation = startLocation;
+          // First reading: capture start position
+          if (!startLocation) {
+            startLocation = { lat: currentLat, lng: currentLng };
+            gpsStatus.textContent = 'Got it! Now walk outside...';
+            console.log('Start location captured:', startLocation);
+            updateDistanceUI(0); // Show 0 meters to start
+            return; // Wait for movement
           }
 
+          // Calculate distance from where you started
           const distance = calculateDistance(
-            referenceLocation.lat, referenceLocation.lng,
+            startLocation.lat, startLocation.lng,
             currentLat, currentLng
           );
 
-          console.log('Distance:', distance, 'Target:', targetDistance);
+          console.log('Distance from start:', distance, 'Target:', targetDistance, 'Readings:', gpsReadingCount);
           updateDistanceUI(distance);
 
           // Send position update to computer
@@ -708,12 +713,12 @@
             lng: currentLng
           });
 
-          // Check if far enough (must be at least 3 meters to avoid GPS jitter)
-          if (distance >= targetDistance && distance >= 3) {
+          // Need at least 3 GPS readings AND distance >= target AND distance >= 5m (avoid jitter)
+          if (gpsReadingCount >= 3 && distance >= targetDistance && distance >= 5) {
             alarmDismissed();
           }
 
-          gpsStatus.textContent = `Tracking... (accuracy: ${Math.round(position.coords.accuracy)}m)`;
+          gpsStatus.textContent = `Distance: ${Math.round(distance)}m (need ${targetDistance}m)`;
         },
         (error) => {
           gpsStatus.textContent = `GPS error: ${error.message}`;
